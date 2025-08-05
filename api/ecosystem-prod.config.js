@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'SolTradeAI-prod',
+      name: 'LucrumAI-prod',
       script: 'build/server.js',
       instances: 2,
       exec_mode: 'cluster',
