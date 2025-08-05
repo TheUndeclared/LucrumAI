@@ -1,12 +1,12 @@
 version: 2.1
 
 orbs:
-  node: circleci/node@5.1.0
+  node: circleci/node@7.1.0
 
 jobs:
   build:
     docker:
-      - image: cimg/node:20.11.0
+      - image: cimg/node:20.18.0
     working_directory: ~/LucrumAI/api
     steps:
       - checkout:
