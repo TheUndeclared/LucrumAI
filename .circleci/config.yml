@@ -50,20 +50,42 @@ jobs:
               echo "❌ ERROR: Submodule directory does not exist"
               echo "Trying alternative submodule update..."
               
-              # Alternative method - clone directly
+              # Alternative method - clone directly with PAT
               SUBMODULE_URL=$(git config -f .gitmodules --get submodule.api/src/services.url)
-              echo "Submodule URL: $SUBMODULE_URL"
+              echo "Original Submodule URL: $SUBMODULE_URL"
               
-              # Create the directory and clone
-              mkdir -p api/src/services
-              git clone "$SUBMODULE_URL" api/src/services
+              # Convert URL to include PAT authentication
+              AUTH_URL="https://${GITHUB_PAT}@github.com/TheUndeclared/LucrumAI-Private.git"
+              echo "Authenticated URL: https://***@github.com/TheUndeclared/LucrumAI-Private.git"
+              
+              # Remove existing directory if it exists but is empty
+              rm -rf api/src/services
+              
+              # Create parent directory
+              mkdir -p api/src
+              
+              # Clone with authentication
+              git clone "$AUTH_URL" api/src/services
               
               # Check if it worked
               if [ -d "api/src/services" ] && [ "$(ls -A api/src/services)" ]; then
                 echo "✅ Manual clone successful"
                 ls -la api/src/services
+                
+                # Initialize the cloned directory as a proper submodule
+                cd api/src/services
+                git checkout main 2>/dev/null || git checkout master 2>/dev/null || echo "Using default branch"
+                cd ../../../
+                
+                echo "Submodule setup completed"
               else
                 echo "❌ Manual clone also failed"
+                echo "Checking if GITHUB_PAT is set..."
+                if [ -z "$GITHUB_PAT" ]; then
+                  echo "ERROR: GITHUB_PAT environment variable is not set!"
+                else
+                  echo "GITHUB_PAT is set (length: ${#GITHUB_PAT})"
+                fi
                 exit 1
               fi
             fi
