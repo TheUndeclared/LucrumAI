@@ -74,22 +74,26 @@ jobs:
               echo "Looking for services directory..."
               find temp_services -name "services" -type d || echo "No services directory found"
               
+              # Remove existing api/src/services if it exists
+              rm -rf api/src/services
+              
               # Check if we have a nested api structure or direct services
               if [ -d "temp_services/api/src/services" ]; then
                 echo "Found nested api/src/services structure - extracting services..."
                 mkdir -p api/src
-                cp -r temp_services/api/src/services/* api/src/services/
+                cp -r temp_services/api/src/services api/src/
                 rm -rf temp_services
               elif [ -d "temp_services/services" ]; then
                 echo "Found direct services directory - using it..."
                 mkdir -p api/src
-                mv temp_services/services api/src/services
+                cp -r temp_services/services api/src/
                 rm -rf temp_services
               else
                 echo "Repository structure doesn't match expected patterns"
                 echo "Using entire repository as services..."
                 mkdir -p api/src
-                mv temp_services api/src/services
+                cp -r temp_services api/src/services
+                rm -rf temp_services/.git  # Remove git directory from copied content
               fi
               
               # Check if it worked
