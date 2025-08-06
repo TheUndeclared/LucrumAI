@@ -15,33 +15,50 @@ jobs:
           fingerprints:
             - "${GITHUB_SSH_FINGERPRINT}"  # You'll need to add this in CircleCI project settings
       - run:
-          name: Setup Git for Private Repos
+          name: Setup SSH and Git Configuration
           command: |
-            pwd
-            ls -a
-            # mkdir -p ~/.ssh
-            # ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-            # git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "https://github.com/"
-      - run:
-          name: Setup Git Submodules
-          command: |
+            # Ensure SSH directory exists
             mkdir -p ~/.ssh
+            chmod 700 ~/.ssh
+            
+            # Add GitHub to known hosts
             ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-            # cd ..
-            pwd
-            git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "git@github.com:"
+            chmod 644 ~/.ssh/known_hosts
+            
+            # Configure git for submodules using SSH
+            git config --global url."git@github.com:".insteadOf "https://github.com/"
+      - run:
+          name: Initialize and Update Submodules
+          command: |
+            # Initialize submodules
             git submodule init
-            git submodule update --recursive
+            
+            # Update submodules recursively
+            git submodule update --recursive --remote
+            
+            # Verify submodule was cloned successfully
+            echo "Checking submodule status:"
+            git submodule status
+            
+            # Verify the services directory exists and has content
+            if [ -d "api/src/services" ]; then
+              echo "Submodule directory exists"
+              ls -la api/src/services
+            else
+              echo "ERROR: Submodule directory does not exist"
+              exit 1
+            fi
       - run:
           name: Debug .gitmodules & GIT env
           command: |
-            ls -a
-            # cd ..
-            cat .gitmodules || echo "No .gitmodules"
-            git config --list
-            pwd
-            echo "api directory: " && ls api -a
-            echo "src directory" && ls api/src -a
+            echo "Current directory: $(pwd)"
+            echo "Project structure:"
+            find . -type d -name ".git" -prune -o -type f -name "*.json" -print | head -10
+            echo "API directory contents:"
+            ls -la api/
+            echo "Services directory contents:"
+            ls -la api/src/services/ || echo "Services directory not found"
+
       - run:
           name: Install Dependencies
           command: cd api/ && npm install
