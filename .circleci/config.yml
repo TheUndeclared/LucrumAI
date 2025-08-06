@@ -17,14 +17,19 @@ jobs:
       - run:
           name: Setup Git for Private Repos
           command: |
-            mkdir -p ~/.ssh
-            ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-            git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "git@github.com:"
+            # mkdir -p ~/.ssh
+            # ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+            # git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "git@github.com:"
             # git config submodule.api/src/services.url https://${GITHUB_PAT}@github.com/TheUndeclared/LucrumAI-Private.git
+            git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "https://github.com/"
+            git submodule sync
       - run:
           name: Inject PAT into Submodule URL
           command: |
-            git config submodule.api/src/services.url https://${GITHUB_PAT}@github.com/TheUndeclared/LucrumAI-Private.git
+            # git config submodule.api/src/services.url https://${GITHUB_PAT}@github.com/TheUndeclared/LucrumAI-Private.git
+            git submodule update --init --recursive --depth 1
+            ls -la api/src || echo "Directory api/src not found"
+            ls -la api/src/services || echo "Directory api/src/services not found"
       - run:
           name: Setup Git Submodules
           command: |
@@ -38,8 +43,8 @@ jobs:
             # ls src/
             # git submodule sync
             # git submodule update --init --recursive
-            git submodule sync
-            git submodule update --init --recursive --jobs 1
+            # git submodule sync
+            # git submodule update --init --recursive --jobs 1
             echo "Submodule content:"
             ls -la src/services || echo "Missing src/services"
       - run:
