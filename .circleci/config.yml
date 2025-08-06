@@ -31,7 +31,7 @@ jobs:
           command: |
             # git config submodule.api/src/services.url https://${GITHUB_PAT}@github.com/TheUndeclared/LucrumAI-Private.git
             cd ..
-            git submodule update --init --recursive --depth 1
+            git submodule update --init --recursive
             ls -la api/src || echo "Directory api/src not found"
             ls -la api/src/services || echo "Directory api/src/services not found"
             pwd
