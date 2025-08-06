@@ -27,12 +27,16 @@ jobs:
             # ssh-keyscan -H github.com >> ~/.ssh/known_hosts
             # git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "git@github.com:"
             # cd ~/LucrumAI
-            git submodule init
-            git submodule update --recursive
-            ls
-            ls src/
+            # git submodule init
+            # git submodule update --recursive
+            # ls
+            # ls src/
+            # git submodule sync
+            # git submodule update --init --recursive
             git submodule sync
-            git submodule update --init --recursive
+            git submodule update --init --recursive --jobs 1
+            echo "Submodule content:"
+            ls -la src/services || echo "Missing src/services"
       - run:
           name: Install Dependencies
           command: npm install
