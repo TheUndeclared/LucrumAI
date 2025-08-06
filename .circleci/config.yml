@@ -43,10 +43,10 @@ jobs:
             ls -a
       - run:
           name: Install Dependencies
-          command: npm install
+          command: cd api/ && npm install
       - run:
           name: Build Application
-          command: npm run build
+          command: cd api/ && npm run build
       - persist_to_workspace:
           root: .
           paths:
