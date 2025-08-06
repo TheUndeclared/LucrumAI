@@ -41,7 +41,7 @@ jobs:
             git config --list
             pwd
             echo "api directory: " && ls api -a
-            echo "src directory" && ls src -a
+            echo "src directory" && ls api/src -a
       - run:
           name: Install Dependencies
           command: cd api/ && npm install
