@@ -14,15 +14,21 @@ jobs:
       - add_ssh_keys:
           fingerprints:
             - "${GITHUB_SSH_FINGERPRINT}"  # You'll need to add this in CircleCI project settings
+      - run:
+          name: Setup Git for Private Repos
+          command: |
+            mkdir -p ~/.ssh
+            ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+            git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "git@github.com:"
       - checkout:
           path: ~/LucrumAI
       - run:
           name: Setup Git Submodules
           command: |
-            mkdir -p ~/.ssh
-            ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-            git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "git@github.com:"
-            cd ~/LucrumAI
+            # mkdir -p ~/.ssh
+            # ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+            # git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "git@github.com:"
+            # cd ~/LucrumAI
             git submodule init
             git submodule update --recursive
             ls
