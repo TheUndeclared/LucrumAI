@@ -102,9 +102,9 @@ jobs:
                 ls -la api/src/services
                 
                 # Initialize the cloned directory as a proper submodule
-                # cd api/src/services
-                # git checkout main 2>/dev/null || git checkout master 2>/dev/null || echo "Using default branch"
-                # cd ../../../
+                cd api/src/services
+                git checkout main 2>/dev/null || git checkout master 2>/dev/null || echo "Using default branch"
+                cd ../../../
                 
                 echo "Submodule setup completed"
               else
@@ -129,6 +129,9 @@ jobs:
             ls -la api/src/
             echo "Services directory contents:"
             ls -la api/src/services/ | head -10
+            echo "Hamza Services directory:"
+            ls -a api/src/services/
+            pwd
 
       - run:
           name: Install Dependencies
