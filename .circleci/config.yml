@@ -140,7 +140,7 @@ jobs:
           name: Build Application
           command: cd api/ && npm run build
       - persist_to_workspace:
-          root: .
+          root: api/
           paths:
             - build/
             - package.json
