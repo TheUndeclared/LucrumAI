@@ -1,0 +1,253 @@
+version: 2.1
+
+orbs:
+  node: circleci/node@7.1.0
+
+jobs:
+  build:
+    docker:
+      - image: cimg/node:20.18.0
+    working_directory: ~/LucrumAI
+    steps:
+      - checkout:
+          path: ~/LucrumAI
+      - run:
+          name: Setup Git with PAT Authentication
+          command: |
+            # Configure git to use PAT for all GitHub operations
+            git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "https://github.com/"
+            git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "git@github.com:"
+      - run:
+          name: Update .gitmodules to use HTTPS
+          command: |
+            echo "=== Original .gitmodules ==="
+            cat .gitmodules
+            
+            # Convert SSH URLs to HTTPS in .gitmodules
+            sed -i 's|git@github.com:|https://github.com/|g' .gitmodules
+            
+            echo "=== Updated .gitmodules ==="
+            cat .gitmodules
+      - run:
+          name: Initialize and Update Submodules
+          command: |
+            echo "=== Initializing submodules ==="
+            git submodule init
+            
+            echo "=== Updating submodules ==="
+            git submodule update --init --recursive
+            
+            echo "=== Submodule status ==="
+            git submodule status
+            
+            echo "=== Verifying submodule directory ==="
+            if [ -d "api/src/services" ]; then
+              echo "✅ Submodule directory exists"
+              ls -la api/src/services
+              echo "Files in submodule:"
+              find api/src/services -type f | head -10
+            else
+              echo "❌ ERROR: Submodule directory does not exist"
+              echo "Trying alternative submodule update..."
+              
+              # Alternative method - clone directly with PAT
+              SUBMODULE_URL=$(git config -f .gitmodules --get submodule.api/src/services.url)
+              echo "Original Submodule URL: $SUBMODULE_URL"
+              
+              # Convert URL to include PAT authentication
+              AUTH_URL="https://${GITHUB_PAT}@github.com/TheUndeclared/LucrumAIPrivate.git"
+              echo "Authenticated URL: https://***@github.com/TheUndeclared/LucrumAIPrivate.git"
+              
+              # Remove existing directory if it exists but is empty
+              rm -rf api/src/services
+              
+              # Create parent directory
+              mkdir -p api/src
+              
+              # Clone with authentication
+              git clone "$AUTH_URL" api/src/services
+              
+              # Check if it worked
+              if [ -d "api/src/services" ] && [ "$(ls -A api/src/services)" ]; then
+                echo "✅ Manual clone successful"
+                ls -la api/src/services
+                
+                # Initialize the cloned directory as a proper submodule
+                cd api/src/services
+                git checkout main 2>/dev/null || git checkout master 2>/dev/null || echo "Using default branch"
+                cd ../../../
+                
+                echo "Submodule setup completed"
+              else
+                echo "❌ Manual clone also failed"
+                echo "Checking if GITHUB_PAT is set..."
+                if [ -z "$GITHUB_PAT" ]; then
+                  echo "ERROR: GITHUB_PAT environment variable is not set!"
+                else
+                  echo "GITHUB_PAT is set (length: ${#GITHUB_PAT})"
+                fi
+                exit 1
+              fi
+            fi
+      - run:
+          name: Debug .gitmodules & GIT env
+          command: |
+            echo "=== Project Structure ==="
+            echo "Current directory: $(pwd)"
+            echo "API directory contents:"
+            ls -la api/
+            echo "API/src directory contents:"
+            ls -la api/src/
+            echo "Services directory contents:"
+            ls -la api/src/services/ | head -10
+
+      - run:
+          name: Install Dependencies
+          command: cd api/ && npm install
+      - run:
+          name: Build Application
+          command: cd api/ && npm run build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - build/
+            - package.json
+            - package-lock.json
+            - docker-compose.yml
+            - ecosystem-prod.config.js
+            - ecosystem-dev.config.js
+
+  deploy-prod:
+    docker:
+      - image: cimg/base:stable
+    working_directory: ~/LucrumAI/api
+    steps:
+      - attach_workspace:
+          at: .
+      - add_ssh_keys:
+          fingerprints:
+            - "${SSH_KEY_FINGERPRINT}"
+      - run:
+          name: Adding DigitalOcean Host to Known Hosts
+          command: |
+            mkdir -p ~/.ssh
+            ssh-keyscan -H $DROPLET_IP >> ~/.ssh/known_hosts
+            chmod 644 ~/.ssh/known_hosts
+      - run:
+          name: Deploy to DigitalOcean
+          command: |
+            ssh root@$DROPLET_IP 'mkdir -p /var/www/LucrumAI-prod'
+            for var in NODE_ENV PORT WEBSOCKET_PORT BASE_URL MAIL_FROM_ADDRESS MAIL_FROM_NAME \
+                      MONGO_USER MONGO_PASSWORD MONGO_HOST MONGO_PORT MONGO_DATABASE MONGODB_URI \
+                      S3_BUCKET S3_ACCESS_KEY S3_SECRET_KEY JWT_SECRET JWT_ISSUER JWT_VALID_MINS \
+                      SENTRY_DNS OPENAI_API_KEY DEEPSEEK_API_KEY OPENAI_MODEL STORK_API_KEY \
+                      RPC_URL PRIVATE_KEY ZERO_EX_API_KEY REDIS_PASSWORD REDIS_HOST REDIS_PORT \
+                      CURVANCE_PTOKEN_WBTC_ADDRESS WALLET_ADDRESS BULLBOARD_USER BULLBOARD_PASS \
+                      BONDING_CONTRACT_ADDRESS FAUCET_CONTRACT_ADDRESS FAUCET_ROLE_PRIVATE_KEY \
+                      DISCORD_CLIENT_ID DISCORD_CLIENT_SECRET DISCORD_REDIRECT_URI DISCORD_SERVER_ID FAUCET_URL \
+                      TERMINAL_RATE_LIMIT_DURATION_IN_SECONDS ENCRYPTION_KEY \
+                      TWITTER_CLIENT_ID TWITTER_CLIENT_SECRET TWITTER_REDIRECT_URI TWITTER_ACCOUNT_HANDLER; do
+
+              prefixed_var="PROD_${var}"
+              val="${!prefixed_var}"
+
+              if [ -n "$val" ]; then
+                echo "${var}=${val}" >> .env
+              fi
+            done
+            tar -czf deploy.tar.gz build package.json ecosystem-prod.config.js docker-compose.yml .env
+            scp deploy.tar.gz root@$DROPLET_IP:/var/www/LucrumAI-prod/
+
+            ssh root@$DROPLET_IP 'cd /var/www/LucrumAI-prod && \
+            tar -xzf deploy.tar.gz && \
+            rm deploy.tar.gz && \
+
+            source ~/.profile && \
+            source ~/.bashrc && \
+            export NVM_DIR="$HOME/.nvm" && \
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && \
+            npm install -g pm2 && \
+            pm2 delete LucrumAI-prod || true && \
+            pm2 start ecosystem-prod.config.js && \
+            pm2 save'
+
+  deploy-dev:
+    docker:
+      - image: cimg/base:stable
+    working_directory: ~/LucrumAI/api
+    steps:
+      - attach_workspace:
+          at: .
+      - add_ssh_keys:
+          fingerprints:
+            - "${SSH_KEY_FINGERPRINT}"
+      - run:
+          name: Adding DigitalOcean Host to Known Hosts
+          command: |
+            mkdir -p ~/.ssh
+            ssh-keyscan -H $DROPLET_IP >> ~/.ssh/known_hosts
+            chmod 644 ~/.ssh/known_hosts
+      - run:
+          name: Deploy to DigitalOcean
+          command: |
+            ssh root@$DROPLET_IP 'mkdir -p /var/www/LucrumAI-dev'
+            for var in NODE_ENV PORT WEBSOCKET_PORT BASE_URL MAIL_FROM_ADDRESS MAIL_FROM_NAME \
+                      MONGO_USER MONGO_PASSWORD MONGO_HOST MONGO_PORT MONGO_DATABASE MONGODB_URI \
+                      S3_BUCKET S3_ACCESS_KEY S3_SECRET_KEY JWT_SECRET JWT_ISSUER JWT_VALID_MINS \
+                      SENTRY_DNS OPENAI_API_KEY DEEPSEEK_API_KEY OPENAI_MODEL STORK_API_KEY \
+                      RPC_URL PRIVATE_KEY ZERO_EX_API_KEY REDIS_PASSWORD REDIS_HOST REDIS_PORT \
+                      CURVANCE_PTOKEN_WBTC_ADDRESS WALLET_ADDRESS BULLBOARD_USER BULLBOARD_PASS \
+                      BONDING_CONTRACT_ADDRESS FAUCET_CONTRACT_ADDRESS FAUCET_ROLE_PRIVATE_KEY \
+                      DISCORD_CLIENT_ID DISCORD_CLIENT_SECRET DISCORD_REDIRECT_URI DISCORD_SERVER_ID FAUCET_URL \
+                      TERMINAL_RATE_LIMIT_DURATION_IN_SECONDS ENCRYPTION_KEY \
+                      TWITTER_CLIENT_ID TWITTER_CLIENT_SECRET TWITTER_REDIRECT_URI TWITTER_ACCOUNT_HANDLER; do
+
+              prefixed_var="DEV_${var}"
+              val="${!prefixed_var}"
+
+              if [ -n "$val" ]; then
+                echo "${var}=${val}" >> .env
+              fi
+            done
+            tar -czf deploy.tar.gz build package.json ecosystem-dev.config.js docker-compose.yml .env
+            scp deploy.tar.gz root@$DROPLET_IP:/var/www/LucrumAI-dev/
+
+            ssh root@$DROPLET_IP 'cd /var/www/LucrumAI-dev && \
+            tar -xzf deploy.tar.gz && \
+            rm deploy.tar.gz && \
+
+            source ~/.profile && \
+            source ~/.bashrc && \
+            export NVM_DIR="$HOME/.nvm" && \
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && \
+            npm install -g pm2 && \
+            pm2 delete LucrumAI-dev || true && \
+            pm2 start ecosystem-dev.config.js && \
+            pm2 save'
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only:
+                - develop
+                # - develop-deploy
+                - main
+      - deploy-dev:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                # - develop-deploy
+                # - develop-deploy
+                - develop
+      - deploy-prod:
+          requires:
+            - build
+          filters:
+            branches:
+              only: main
