@@ -129,6 +129,9 @@ jobs:
             ls -la api/src/
             echo "Services directory contents:"
             ls -la api/src/services/ | head -10
+            echo "Hamza Services directory:"
+            ls -a api/src/services/
+            pwd
 
       - run:
           name: Install Dependencies
@@ -137,7 +140,7 @@ jobs:
           name: Build Application
           command: cd api/ && npm run build
       - persist_to_workspace:
-          root: .
+          root: api/
           paths:
             - build/
             - package.json
