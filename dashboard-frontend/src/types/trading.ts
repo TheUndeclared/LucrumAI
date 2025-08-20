@@ -33,6 +33,24 @@ export interface IDecision {
   createdAt: string;
   updatedAt: string;
 }
+// export interface IDecisionLending {
+//   borrowApy: number;
+//   supplyApy: number;
+//   timestamp: string;
+//   totalBorrow: number;
+//   totalSupply: number;
+//   utilizationRate: number;
+// }
+// export interface IDecisionTrading {
+//   action: "WAIT" | "BUY";
+//   confidence: "HIGH" | "LOW";
+//   pair: string; // "SOL_USD"
+//   reasoning: {
+//     pairSelection: string;
+//     riskAssessment: "HIGH" | "LOW";
+//     technicalAnalysis: string;
+//   };
+// }
 
 // OHLC Historical Price Metrics
 export interface OHLCData {
