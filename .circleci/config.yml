@@ -35,7 +35,7 @@ jobs:
       - run:
           name: Debug .gitmodules & GIT env
           command: |
-          ls -a
+            ls -a
             cd ..
             cat .gitmodules || echo "No .gitmodules"
             git config --list
