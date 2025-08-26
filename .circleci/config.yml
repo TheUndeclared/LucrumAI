@@ -7,7 +7,7 @@ jobs:
   build:
     docker:
       - image: cimg/node:20.18.0
-    working_directory: ~/LucrumAI/api
+    working_directory: ~/LucrumAI
     steps:
       - checkout:
           path: ~/LucrumAI
@@ -27,7 +27,7 @@ jobs:
           command: |
             mkdir -p ~/.ssh
             ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-            cd ..
+            # cd ..
             pwd
             git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "git@github.com:"
             git submodule init
@@ -36,7 +36,7 @@ jobs:
           name: Debug .gitmodules & GIT env
           command: |
             ls -a
-            cd ..
+            # cd ..
             cat .gitmodules || echo "No .gitmodules"
             git config --list
             pwd
