@@ -1,14 +1,14 @@
 import { Metadata } from "next";
 
-import SolanaBalanceChart from "@/components/charts/solana-balance-chart";
+import ProtocolAllocationChart from "@/components/charts/protocol-allocation-chart";
 import TradingViewChart from "@/components/charts/trading-view-chart";
 import Header from "@/components/header";
 import CurvanceDecisionsTable from "@/components/tables/curvance-decisions-table";
 import TradingDecisionsTable from "@/components/tables/trading-decisions-table";
+import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn, transformDecisionsData } from "@/functions";
 import { getDecisions } from "@/lib/actions";
-import { Progress } from "@/components/ui/progress";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -56,7 +56,8 @@ export default async function Page() {
   // Get decisions history
   const decisions = await getDecisions();
   const { tradingDecisions, curvanceDecisions } = transformDecisionsData(
-    decisions?.data?.rows || []
+    // @ts-expect-error Backend needs to return response in `data` key
+    decisions?.rows || []
   );
   // console.log("Trading Decisions:", tradingDecisions);
   // console.log("Curvance Decisions:", curvanceDecisions);
@@ -94,23 +95,12 @@ export default async function Page() {
             <div className="text-primary text-2xl">18.7%</div>
             <div className="text-primary text-sm">Across 5 protocols</div>
           </div>
+
+          {/* Protocol Allocation */}
+          <ProtocolAllocationChart />
         </div>
 
         <div className="flex-1 border-x-1 p-4 max-w-full space-y-6">
-          {/* Top Grid */}
-          {/* <div
-            className={cn(
-              "rounded-2xl p-5 relative overflow-hidden",
-              "bg-gradient-to-br from-gray-100 via-white to-gray-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800",
-              "shadow-lg hover:shadow-[0_0_8px_#7efe733d] transition-all duration-400"
-            )}
-          >
-            <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
-              <span className="text-[#7efe73]">●</span> Portfolio Overview
-            </h3>
-            <SolanaBalanceChart />
-          </div> */}
-
           {/* Market OHLC Chart */}
           <div
             // className="bg-muted/50 rounded-xl p-4 md:col-span-2"
@@ -121,11 +111,14 @@ export default async function Page() {
             //   "shadow-lg hover:shadow-[0_0_8px_#7efe733d] transition-all duration-400"
             // )}
           >
-            {/* <OHLCPriceMetricsChart /> */}
             <TradingViewChart />
           </div>
 
           {/* Decisions History */}
+          {/* <DecisionsHistory
+            curvanceDecisions={curvanceDecisions}
+            tradingDecisions={tradingDecisions}
+          /> */}
           <div
             // className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl p-4 md:min-h-min"
             className="border rounded-md p-4 bg-secondary"

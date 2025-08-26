@@ -5,7 +5,7 @@ import { PublicKey } from "@solana/web3.js";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 
-// Dynamically import ApexCharts
+// ApexCharts needs dynamic import to avoid SSR issues in Next.js
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 type Token = {
