@@ -19,7 +19,11 @@ jobs:
           command: |
             mkdir -p ~/.ssh
             ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-            # git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "git@github.com:"
+            git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "git@github.com:"
+            # git config submodule.api/src/services.url https://${GITHUB_PAT}@github.com/TheUndeclared/LucrumAI-Private.git
+      - run:
+          name: Inject PAT into Submodule URL
+          command: |
             git config submodule.api/src/services.url https://${GITHUB_PAT}@github.com/TheUndeclared/LucrumAI-Private.git
       - run:
           name: Setup Git Submodules
