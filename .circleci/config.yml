@@ -26,8 +26,8 @@ jobs:
             ls
             git submodule sync
             git submodule update --init --recursive
-            ls src
-            ls src/services/
+            ls api
+            ls api/src/services/
             ls -la api/src/services/
       - run:
           name: Install Dependencies
