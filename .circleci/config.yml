@@ -18,7 +18,7 @@ jobs:
           name: Setup Git for Private Repos
           command: |
             pwd
-            ls
+            ls -a
             # mkdir -p ~/.ssh
             # ssh-keyscan -H github.com >> ~/.ssh/known_hosts
             # git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "git@github.com:"
@@ -35,7 +35,7 @@ jobs:
             ls -la api/src || echo "Directory api/src not found"
             ls -la api/src/services || echo "Directory api/src/services not found"
             pwd
-            ls
+            ls -a
       - run:
           name: Setup Git Submodules
           command: |
@@ -54,7 +54,7 @@ jobs:
             echo "Submodule content:"
             ls -la src/services || echo "Missing src/services"
             pwd
-            ls
+            ls -a
       - run:
           name: Debug .gitmodules & GIT env
           command: |
@@ -62,7 +62,7 @@ jobs:
             cat .gitmodules || echo "No .gitmodules"
             git config --list
             pwd
-            ls
+            ls -a
       - run:
           name: Install Dependencies
           command: npm install
