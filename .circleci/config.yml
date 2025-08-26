@@ -55,8 +55,8 @@ jobs:
               echo "Original Submodule URL: $SUBMODULE_URL"
               
               # Convert URL to include PAT authentication
-              AUTH_URL="https://${GITHUB_PAT}@github.com/TheUndeclared/LucrumAI-Private.git"
-              echo "Authenticated URL: https://***@github.com/TheUndeclared/LucrumAI-Private.git"
+              AUTH_URL="https://${GITHUB_PAT}@github.com/TheUndeclared/LucrumAIPrivate.git"
+              echo "Authenticated URL: https://***@github.com/TheUndeclared/LucrumAIPrivate.git"
               
               # Remove existing directory if it exists but is empty
               rm -rf api/src/services
