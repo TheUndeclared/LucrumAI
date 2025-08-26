@@ -104,7 +104,7 @@ export default function SolanaWalletButton() {
       // Sign the message using the ref
       handleSignMessageRef.current(message);
     };
-    // fetchAndSignMessage();
+    fetchAndSignMessage();
   }, [connected, router, isClient]); // Removed handleSignMessage from dependencies
 
   // Don't render anything on server side

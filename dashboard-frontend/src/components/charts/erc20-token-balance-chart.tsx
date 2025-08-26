@@ -44,9 +44,7 @@ const tokens: Token[] = [
 export default function ERC20BalanceChart() {
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
-  const [balances, setBalances] = useState<
-    { symbol: string; balance: number }[]
-  >([]);
+  const [balances, setBalances] = useState<{ symbol: string; balance: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const walletBalance = useBalance({ address });
 
@@ -83,8 +81,7 @@ export default function ERC20BalanceChart() {
         // Format balances
         const formattedBalances = tokens.map((token, index) => {
           const decimals = (decimalsData[index]?.result ?? 18) as number;
-          const rawBalance = (balancesData[index]?.result ??
-            BigInt(0)) as bigint;
+          const rawBalance = (balancesData[index]?.result ?? BigInt(0)) as bigint;
           return {
             symbol: token.symbol,
             balance: parseFloat(formatUnits(rawBalance, decimals)), // Convert BigInt to float
@@ -95,7 +92,7 @@ export default function ERC20BalanceChart() {
         if (walletBalance.isSuccess) {
           const { symbol, decimals, value } = walletBalance.data;
 
-          if (symbol === "MON") {
+          if (symbol === 'MON') {
             formattedBalances.push({
               symbol: symbol,
               balance: parseFloat(formatUnits(value, decimals)),
@@ -112,16 +109,9 @@ export default function ERC20BalanceChart() {
     };
 
     fetchBalances();
-  }, [
-    address,
-    isConnected,
-    chainId,
-    walletBalance.isSuccess,
-    walletBalance.data,
-  ]);
+  }, [address, isConnected, chainId, walletBalance.isSuccess]);
 
-  if (!isConnected)
-    return <div>Connect your wallet to see the balance chart.</div>;
+  if (!isConnected) return <div>Connect your wallet to see the balance chart.</div>;
   if (loading) return <div>Loading balances...</div>;
 
   // Chart options
@@ -147,12 +137,7 @@ export default function ERC20BalanceChart() {
   return (
     <div>
       <h2 className="text-lg font-bold">Token Balances</h2>
-      <Chart
-        height={350}
-        options={chartOptions}
-        series={chartSeries}
-        type="donut"
-      />
+      <Chart height={350} options={chartOptions} series={chartSeries} type="donut" />
     </div>
   );
-}
+};

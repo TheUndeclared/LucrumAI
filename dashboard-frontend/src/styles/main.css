@@ -13,7 +13,7 @@
   --card-foreground: hsl(0 0% 3.9%);
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(0 0% 3.9%);
-  --primary: hsl(142, 69%, 58%);
+  --primary: hsl(240, 6%, 10%);
   --primary-foreground: hsl(0, 0%, 98%);
   --secondary: hsl(240, 5%, 96%);
   --secondary-foreground: hsl(240, 6%, 10%);
@@ -44,27 +44,24 @@
 }
 
 .dark {
-  /* --background: hsl(240, 10%, 4%); */
-  --background: var(--color-black);
+  --background: hsl(240, 10%, 4%);
   --foreground: hsl(0, 0%, 98%);
   --card: hsl(0 0% 3.9%);
   --card-foreground: hsl(0 0% 98%);
   --popover: hsl(0 0% 3.9%);
   --popover-foreground: hsl(0 0% 98%);
-  /* #4ADE80 */
-  --primary: hsl(142, 69%, 58%);
+  --primary: hsl(0, 0%, 98%);
   --primary-foreground: hsl(240, 6%, 10%);
-  --secondary: hsla(221, 39%, 11%, 0.5);
+  --secondary: hsl(240, 4%, 16%);
   --secondary-foreground: hsl(0, 0%, 98%);
   --muted: hsl(0 0% 14.9%);
-  --muted-foreground: hsl(218, 11%, 65%);
+  --muted-foreground: hsl(0 0% 63.9%);
   --accent: hsl(240, 4%, 16%);
   --accent-foreground: hsl(0 0% 98%);
   --destructive: hsl(0, 63%, 31%);
   --destructive-button-text: hsl(0, 86%, 97%);
   --destructive-foreground: hsl(0 0% 98%);
-  /* --border: hsl(240, 4%, 16%); */
-  --border: hsla(152, 100%, 50%, 0.2);
+  --border: hsl(240, 4%, 16%);
   --input: hsl(240, 4%, 16%);
   --ring: hsl(0 0% 83.1%);
   --chart-1: hsl(220 70% 50%);
@@ -136,7 +133,6 @@
     from {
       height: 0;
     }
-
     to {
       height: var(--radix-accordion-content-height);
     }
@@ -146,7 +142,6 @@
     from {
       height: var(--radix-accordion-content-height);
     }
-
     to {
       height: 0;
     }
@@ -157,7 +152,6 @@
   * {
     @apply border-border outline-ring/50;
   }
-
   body {
     @apply bg-background text-foreground;
   }

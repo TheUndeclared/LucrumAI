@@ -44,8 +44,8 @@ export const getDecisions = async () => {
 // Get OHLC price data for a specific asset within a time range
 export const getOHLCPriceMetrics = async (queryData: IQueryData) => {
   const now = Math.floor(Date.now() / 1000); // Current Unix timestamp in seconds
-  // const oneWeekAgo = now - 7 * 24 * 60 * 60; // 7 days ago in seconds
-  // console.log({ oneWeekAgo });
+  const oneWeekAgo = now - 7 * 24 * 60 * 60; // 7 days ago in seconds
+  console.log({ oneWeekAgo });
 
   const params = {
     // The address of a pair contract
@@ -55,8 +55,7 @@ export const getOHLCPriceMetrics = async (queryData: IQueryData) => {
         : queryData.symbol === "SOLUSD"
           ? process.env.BIRDEYE_ADDRESS_SOLUSD
           : "",
-    // time_from: oneWeekAgo, // Unix timestamp in seconds
-    time_from: 0, // Unix timestamp in seconds
+    time_from: oneWeekAgo, // Unix timestamp in seconds
     time_to: now, // Unix timestamp in seconds
     type: queryData.timeFrame, // OHLCV time frame.
   };

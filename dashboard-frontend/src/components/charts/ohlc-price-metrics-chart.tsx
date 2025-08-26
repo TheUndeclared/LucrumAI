@@ -123,9 +123,7 @@ export default function OHLCPriceMetricsChart() {
 
   return (
     <>
-      <h3 className="text-lg font-semibold mb-6 flex items-center gap-2">
-        <span className="text-[#7efe73]">●</span> Market Price Metrics
-      </h3>
+      <h3 className="text-lg font-semibold mb-6">Market Price Metrics</h3>
       <div className="flex items-center gap-2 mb-4">
         {/* Symbol Selector */}
         <Select
