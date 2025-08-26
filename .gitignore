@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+.env
+.env.*
+
+# Build
+dist/
+build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Private code
+api/src/services/
+api/src/services/**/*
+
+# Temporary files
+*.tmp
+*.temp
+
+# Coverage
+coverage/
