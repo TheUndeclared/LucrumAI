@@ -32,10 +32,10 @@ jobs:
           name: Initialize and Update Submodules
           command: |
             echo "=== Initializing submodules ==="
-            git submodule init --verbose
+            git submodule init
             
             echo "=== Updating submodules ==="
-            git submodule update --init --recursive --progress --verbose
+            git submodule update --init --recursive
             
             echo "=== Submodule status ==="
             git submodule status
@@ -48,9 +48,24 @@ jobs:
               find api/src/services -type f | head -10
             else
               echo "❌ ERROR: Submodule directory does not exist"
-              echo "Directory structure:"
-              find api/src -type d 2>/dev/null || echo "api/src not found"
-              exit 1
+              echo "Trying alternative submodule update..."
+              
+              # Alternative method - clone directly
+              SUBMODULE_URL=$(git config -f .gitmodules --get submodule.api/src/services.url)
+              echo "Submodule URL: $SUBMODULE_URL"
+              
+              # Create the directory and clone
+              mkdir -p api/src/services
+              git clone "$SUBMODULE_URL" api/src/services
+              
+              # Check if it worked
+              if [ -d "api/src/services" ] && [ "$(ls -A api/src/services)" ]; then
+                echo "✅ Manual clone successful"
+                ls -la api/src/services
+              else
+                echo "❌ Manual clone also failed"
+                exit 1
+              fi
             fi
       - run:
           name: Debug .gitmodules & GIT env
