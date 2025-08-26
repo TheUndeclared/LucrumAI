@@ -40,7 +40,8 @@ jobs:
             cat .gitmodules || echo "No .gitmodules"
             git config --list
             pwd
-            ls -a
+            echo "api directory: " && ls api -a
+            echo "src directory" && ls src -a
       - run:
           name: Install Dependencies
           command: cd api/ && npm install
