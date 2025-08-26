@@ -11,53 +11,58 @@ jobs:
     steps:
       - checkout:
           path: ~/LucrumAI
-      - add_ssh_keys:
-          fingerprints:
-            - "${GITHUB_SSH_FINGERPRINT}"  # You'll need to add this in CircleCI project settings
       - run:
-          name: Setup SSH and Git Configuration
+          name: Setup Git with PAT Authentication
           command: |
-            # Ensure SSH directory exists
-            mkdir -p ~/.ssh
-            chmod 700 ~/.ssh
+            # Configure git to use PAT for all GitHub operations
+            git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "https://github.com/"
+            git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "git@github.com:"
+      - run:
+          name: Update .gitmodules to use HTTPS
+          command: |
+            echo "=== Original .gitmodules ==="
+            cat .gitmodules
             
-            # Add GitHub to known hosts
-            ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-            chmod 644 ~/.ssh/known_hosts
+            # Convert SSH URLs to HTTPS in .gitmodules
+            sed -i 's|git@github.com:|https://github.com/|g' .gitmodules
             
-            # Configure git for submodules using SSH
-            git config --global url."git@github.com:".insteadOf "https://github.com/"
+            echo "=== Updated .gitmodules ==="
+            cat .gitmodules
       - run:
           name: Initialize and Update Submodules
           command: |
-            # Initialize submodules
-            git submodule init
+            echo "=== Initializing submodules ==="
+            git submodule init --verbose
             
-            # Update submodules recursively
-            git submodule update --recursive --remote
+            echo "=== Updating submodules ==="
+            git submodule update --init --recursive --progress --verbose
             
-            # Verify submodule was cloned successfully
-            echo "Checking submodule status:"
+            echo "=== Submodule status ==="
             git submodule status
             
-            # Verify the services directory exists and has content
+            echo "=== Verifying submodule directory ==="
             if [ -d "api/src/services" ]; then
-              echo "Submodule directory exists"
+              echo "✅ Submodule directory exists"
               ls -la api/src/services
+              echo "Files in submodule:"
+              find api/src/services -type f | head -10
             else
-              echo "ERROR: Submodule directory does not exist"
+              echo "❌ ERROR: Submodule directory does not exist"
+              echo "Directory structure:"
+              find api/src -type d 2>/dev/null || echo "api/src not found"
               exit 1
             fi
       - run:
           name: Debug .gitmodules & GIT env
           command: |
+            echo "=== Project Structure ==="
             echo "Current directory: $(pwd)"
-            echo "Project structure:"
-            find . -type d -name ".git" -prune -o -type f -name "*.json" -print | head -10
             echo "API directory contents:"
             ls -la api/
+            echo "API/src directory contents:"
+            ls -la api/src/
             echo "Services directory contents:"
-            ls -la api/src/services/ || echo "Services directory not found"
+            ls -la api/src/services/ | head -10
 
       - run:
           name: Install Dependencies
