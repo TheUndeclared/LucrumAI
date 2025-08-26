@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: soltradeai_mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=soltradeai
+
+  redis:
+    image: redis:alpine
+    container_name: soltradeai_redis
+    ports:
+      - "127.0.0.1:${REDIS_PORT}:${REDIS_PORT}"
+    command: redis-server --port ${REDIS_PORT} --save 20 1 --loglevel verbose --requirepass ${REDIS_PASSWORD}
+    env_file:
+      - .env
+    volumes:
+      - redis_data:/data
+
+volumes:
+  mongodb_data:
+  redis_data:
