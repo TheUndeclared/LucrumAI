@@ -9,11 +9,13 @@ jobs:
       - image: cimg/node:20.18.0
     working_directory: ~/LucrumAI/api
     steps:
-      - checkout:
-          path: ~/LucrumAI
+      # - checkout:
+      #     path: ~/LucrumAI
       - add_ssh_keys:
           fingerprints:
             - "${GITHUB_SSH_FINGERPRINT}"  # You'll need to add this in CircleCI project settings
+      - checkout:
+          path: ~/LucrumAI
       - run:
           name: Setup Git Submodules
           command: |
