@@ -1,0 +1,9 @@
+/* FONTS */
+@theme {
+  --font-sans: var(--font-space-grotesk);
+}
+
+/* COLORS */
+@theme {
+  --color-primary: #000;
+}
