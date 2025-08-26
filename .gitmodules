@@ -1,0 +1,4 @@
+[submodule "api/src/services"]
+    path = api/src/services
+    url = git@github.com:TheUndeclared/LucrumAI-Private.git
+    branch = main

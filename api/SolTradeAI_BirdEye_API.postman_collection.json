@@ -1,0 +1,486 @@
+{
+  "info": {
+    "name": "SolTradeAI - Complete API",
+    "description": "Complete API collection for SolTradeAI backend with MongoDB, Solana trading, and Kamino lending support. Includes AI-powered trading decisions, lending opportunities analysis, token balances, and manual operations.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "apiPrefix",
+      "value": "/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "your_jwt_token_here",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}{{apiPrefix}}/",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", ""]
+        },
+        "description": "Check if the API is running"
+      }
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Get Auth Message",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/auth/message",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "message"]
+            },
+            "description": "Get message to sign with wallet"
+          }
+        },
+        {
+          "name": "Verify Signature",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"walletAddress\": \"your_wallet_address\",\n  \"signature\": \"your_signature\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/auth/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "verify"]
+            },
+            "description": "Verify wallet signature and get JWT token"
+          }
+        }
+      ]
+    },
+    {
+      "name": "LLM/AI",
+      "item": [
+        {
+          "name": "Test Decision",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-monetai-auth",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/llms/test",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "llms", "test"]
+            },
+            "description": "Test AI decision making with default parameters"
+          }
+        },
+        {
+          "name": "Make Decision",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-monetai-auth",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resolution\": \"240\",\n  \"from\": 1753112742000,\n  \"to\": 1753118742000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/llms/decisions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "llms", "decisions"]
+            },
+            "description": "Get AI trading decision with custom parameters"
+          }
+        },
+        {
+          "name": "Get Decisions History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-monetai-auth",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/llms/decisions?limit=10&offset=0",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "llms", "decisions"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "description": "Get historical AI decisions with pagination"
+          }
+        },
+        {
+          "name": "Debug BirdEye",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-monetai-auth",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/llms/debug-birdeye",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "llms", "debug-birdeye"]
+            },
+            "description": "Debug BirdEye API data structure"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Trading",
+      "item": [
+        {
+          "name": "Get Trading History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-monetai-auth",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/trading/history?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trading", "history"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get trading history with pagination"
+          }
+        },
+        {
+          "name": "Get Available Trading Pairs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-monetai-auth",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/trading/pairs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trading", "pairs"]
+            },
+            "description": "Get list of available trading pairs with token details"
+          }
+        },
+        {
+          "name": "Get Token Balances",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-monetai-auth",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/trading/balances",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trading", "balances"]
+            },
+            "description": "Get current token balances for all configured tokens"
+          }
+        },
+        {
+          "name": "Test Manual Trade - BUY SOL",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-monetai-auth",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"BUY\",\n  \"pair\": \"SOL_USDT\",\n  \"amount\": 0.01\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/trading/test",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trading", "test"]
+            },
+            "description": "Execute a manual BUY trade for SOL/USDT (BE CAREFUL - this executes real trades!)"
+          }
+        },
+        {
+          "name": "Test Manual Trade - SELL SOL",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-monetai-auth",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"SELL\",\n  \"pair\": \"SOL_USDT\",\n  \"amount\": 0.01\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/trading/test",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trading", "test"]
+            },
+            "description": "Execute a manual SELL trade for SOL/USDT (BE CAREFUL - this executes real trades!)"
+          }
+        },
+        {
+          "name": "Test Manual Trade - BTC",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "x-monetai-auth",
+                "value": "{{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"BUY\",\n  \"pair\": \"BTC_USDT\",\n  \"amount\": 0.001\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/trading/test",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trading", "test"]
+            },
+            "description": "Execute a manual BUY trade for BTC/USDT (BE CAREFUL - this executes real trades!)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Lending",
+      "item": [
+        {
+          "name": "Get Lending Metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-monetai-auth",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/lending/metrics",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lending", "metrics"]
+            },
+            "description": "Get current Kamino lending market metrics for SOL, tBTC, and USDC"
+          }
+        },
+        {
+          "name": "Get Lending History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-monetai-auth",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/lending/history?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lending", "history"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "token",
+                  "value": "SOL",
+                  "disabled": true
+                },
+                {
+                  "key": "action",
+                  "value": "LEND",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "COMPLETED",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Get lending history with optional filters for token, action, and status"
+          }
+        },
+        {
+          "name": "Test Kamino Connection",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-monetai-auth",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/lending/test-connection",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lending", "test-connection"]
+            },
+            "description": "Test connectivity to Kamino API"
+          }
+        },
+        {
+          "name": "Test Lending Decision",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-monetai-auth",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/lending/test-decision",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lending", "test-decision"]
+            },
+            "description": "Trigger AI lending analysis and get recommendations"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Admin Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-monetai-auth",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}{{apiPrefix}}/admin",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin"]
+            },
+            "description": "Admin dashboard status"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Documentation",
+      "item": [
+        {
+          "name": "Swagger UI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api-docs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api-docs"]
+            },
+            "description": "Interactive API documentation"
+          }
+        },
+        {
+          "name": "Bull Board",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Basic YWRtaW46YWRtaW4="
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/bullmq",
+              "host": ["{{baseUrl}}"],
+              "path": ["bullmq"]
+            },
+            "description": "Queue monitoring dashboard (admin:admin)"
+          }
+        }
+      ]
+    }
+  ]
+} 
