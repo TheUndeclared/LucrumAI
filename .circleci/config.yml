@@ -17,6 +17,8 @@ jobs:
       - run:
           name: Setup Git Submodules
           command: |
+            mkdir -p ~/.ssh
+            ssh-keyscan -H github.com >> ~/.ssh/known_hosts
             git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "git@github.com:"
             git submodule init
             git submodule update --recursive
