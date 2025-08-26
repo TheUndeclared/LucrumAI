@@ -48,6 +48,11 @@ jobs:
             echo "Submodule content:"
             ls -la src/services || echo "Missing src/services"
       - run:
+          name: Debug .gitmodules & GIT env
+          command: |
+            cat .gitmodules || echo "No .gitmodules"
+            git config --list
+      - run:
           name: Install Dependencies
           command: npm install
       - run:
