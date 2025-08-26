@@ -54,7 +54,7 @@ jobs:
               SUBMODULE_URL=$(git config -f .gitmodules --get submodule.api/src/services.url)
               echo "Original Submodule URL: $SUBMODULE_URL"
               
-              # Convert URL to include PAT authentication
+              # Convert URL to include PAT authentication with correct repo name
               AUTH_URL="https://${GITHUB_PAT}@github.com/TheUndeclared/LucrumAIPrivate.git"
               echo "Authenticated URL: https://***@github.com/TheUndeclared/LucrumAIPrivate.git"
               
@@ -65,7 +65,32 @@ jobs:
               mkdir -p api/src
               
               # Clone with authentication
-              git clone "$AUTH_URL" api/src/services
+              git clone "$AUTH_URL" temp_services
+              
+              echo "=== Examining cloned repository structure ==="
+              echo "Contents of temp_services:"
+              ls -la temp_services/
+              
+              echo "Looking for services directory..."
+              find temp_services -name "services" -type d || echo "No services directory found"
+              
+              # Check if we have a nested api structure or direct services
+              if [ -d "temp_services/api/src/services" ]; then
+                echo "Found nested api/src/services structure - extracting services..."
+                mkdir -p api/src
+                cp -r temp_services/api/src/services/* api/src/services/
+                rm -rf temp_services
+              elif [ -d "temp_services/services" ]; then
+                echo "Found direct services directory - using it..."
+                mkdir -p api/src
+                mv temp_services/services api/src/services
+                rm -rf temp_services
+              else
+                echo "Repository structure doesn't match expected patterns"
+                echo "Using entire repository as services..."
+                mkdir -p api/src
+                mv temp_services api/src/services
+              fi
               
               # Check if it worked
               if [ -d "api/src/services" ] && [ "$(ls -A api/src/services)" ]; then
