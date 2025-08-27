@@ -244,8 +244,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-space-grotesk);
+  /* --font-mono: var(--font-orbitron); */
+  --font-heading: var(--font-orbitron);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -289,76 +290,10 @@
   --light-gray: #E0E0E0;
 }
 
-/* :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-} */
-
-/* .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-} */
-
 :root {
+  --font-orbitron: 'Orbitron', sans-serif;
+  --font-space-grotesk: 'Space Grotesk', sans-serif;
+
   --radius: 0.625rem;
 
   /* Base */
@@ -371,9 +306,9 @@
   --popover: #FFFFFF;
   --popover-foreground: #1A2B3C;
 
-  /* Primary accents from SolSplitter logo */
-  --primary: #3BE8B0;
-  --primary-foreground: #0F1E2E;
+  /* Primary accents */
+  --primary: #00FF87;
+  --primary-foreground: #000000;
 
   --secondary: #A17CFF;
   --secondary-foreground: #1A2B3C;
@@ -399,7 +334,7 @@
   /* Sidebar and charts (optional) */
   --sidebar: #FFFFFF;
   --sidebar-foreground: #1A2B3C;
-  --sidebar-primary: #3BE8B0;
+  --sidebar-primary: #00FF87;
   --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: #5AD6E6;
   --sidebar-accent-foreground: #1A2B3C;
@@ -408,7 +343,8 @@
 }
 
 .dark {
-  --background: #0F1E2E;
+  /* --background: #0F1E2E; */
+  --background: #000000;
   --foreground: #FFFFFF;
 
   --card: #1A2B3C;
@@ -416,35 +352,39 @@
   --popover: #1A2B3C;
   --popover-foreground: #FFFFFF;
 
-  --primary: #3BE8B0;
-  --primary-foreground: #0F1E2E;
+  --primary: #00FF87;
+  --primary-foreground: #000000;
 
-  --secondary: #A17CFF;
-  --secondary-foreground: #FFFFFF;
+  --secondary: #1F2937;
+  --secondary-foreground: #9CA3AF;
 
-  --accent: #5AD6E6;
-  --accent-foreground: #0F1E2E;
+  --accent: #00FF87;
+  --accent-foreground: #000000;
 
   --muted: #3A4B5C;
   --muted-foreground: #94A3B8;
 
   --border: #3A4B5C;
   --input: #3A4B5C;
-  --ring: #5AD6E6;
+  --ring: #00FF87;
 
   --sidebar: #1A2B3C;
   --sidebar-foreground: #FFFFFF;
-  --sidebar-primary: #3BE8B0;
-  --sidebar-primary-foreground: #0F1E2E;
-  --sidebar-accent: #5AD6E6;
+  --sidebar-primary: #00FF87;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: #00FF87;
   --sidebar-accent-foreground: #1A2B3C;
   --sidebar-border: #3A4B5C;
-  --sidebar-ring: #5AD6E6;
+  --sidebar-ring: #00FF87;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+
+  html {
+    scroll-behavior: smooth;
   }
 
   body {
@@ -471,6 +411,10 @@
   @variant xl {
     padding-inline: 4rem;
   }
+}
+
+@utility gradient-section {
+  @apply bg-linear-to-r from-0% from-primary/15 to-background;
 }
 
 .feature-list li {
