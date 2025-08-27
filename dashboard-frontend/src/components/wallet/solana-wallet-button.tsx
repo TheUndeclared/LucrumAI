@@ -7,10 +7,21 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { toast } from "sonner";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { getMessage, verifySignedMessage } from "@/lib/actions";
 
-export default function SolanaWalletButton() {
+export const SolanaWalletButton = () => {
   const [isClient, setIsClient] = useState(false);
+  const [openConfirmation, setOpenConfirmation] = useState(false);
   const router = useRouter();
   const { connected, publicKey, signMessage } = useWallet();
 
@@ -44,12 +55,16 @@ export default function SolanaWalletButton() {
             publicKey.toString(),
             sigB64
           );
+          console.log({ verifySignedMessage: response });
 
           if (response?.error || !response.data) {
             console.error("Failed to verify signed message:", response.error);
             toast.error("Failed to verify signed message. Please try again.");
             return;
           }
+
+          // TODO - show "Custodial wallet" confirmation popup if not already created
+          setOpenConfirmation(true);
         } catch (error) {
           console.error("Error verifying signed message:", error);
           toast.error("Error verifying signed message");
@@ -86,6 +101,7 @@ export default function SolanaWalletButton() {
 
       // Fetch message from API endpoint
       const response = await getMessage();
+      console.log({ getMessage: response });
 
       if (response?.error || !response.data) {
         console.error("Error fetching message:", response.error);
@@ -94,7 +110,7 @@ export default function SolanaWalletButton() {
       }
 
       // Get the message string
-      const { message } = response.data;
+      const { message } = response.data?.data;
 
       if (!message) {
         toast.error("No message received from the server.");
@@ -112,5 +128,33 @@ export default function SolanaWalletButton() {
     return <div className="h-10 w-32 bg-muted animate-pulse rounded" />;
   }
 
-  return <WalletMultiButton className="px-4" />;
-}
+  return (
+    <>
+      <WalletMultiButton />
+      <AlertDialog open={openConfirmation} onOpenChange={setOpenConfirmation}>
+        {/* Popup content */}
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Do you want to create LucrumAI wallet?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your
+              account and remove your data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel className="min-w-22">No</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-green-600 hover:bg-green-700"
+              onClick={() => console.log("Confirmed!")}
+            >
+              Yes, create
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+};

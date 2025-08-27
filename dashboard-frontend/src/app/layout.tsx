@@ -1,23 +1,23 @@
-import { Metadata, Viewport } from 'next';
-import type { PropsWithChildren } from 'react';
+import { Metadata, Viewport } from "next";
+import type { PropsWithChildren } from "react";
 
-import { Providers } from '@/app/providers';
-import { CoreLayout } from '@/components/core-layout';
-import { Toaster } from '@/components/ui/sonner';
-import { inter } from '@/fonts';
-import { cn } from '@/functions/cn';
+import { Providers } from "@/app/providers";
+import { CoreLayout } from "@/components/core-layout";
+import { Toaster } from "@/components/ui/sonner";
+import { spaceGrotesk } from "@/fonts";
+import { cn } from "@/functions/cn";
 
-import '@/styles/main.css';
-import '@rainbow-me/rainbowkit/styles.css';
+import "@/styles/main.css";
+import "@rainbow-me/rainbowkit/styles.css";
 
 export const viewport: Viewport = {
-  themeColor: 'black',
+  themeColor: "black",
 };
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | MonetAI",
-    default: "MonetAI",
+    template: "%s | LucrumAI",
+    default: "LucrumAI",
   },
   // description: 'Your app description',
   // metadataBase: new URL('https://google.com'),
@@ -36,7 +36,11 @@ export const metadata: Metadata = {
 
 const GlobalLayout = ({ children }: PropsWithChildren) => {
   return (
-    <html suppressHydrationWarning className={cn(inter.variable)} lang="en">
+    <html
+      suppressHydrationWarning
+      className={cn(spaceGrotesk.variable)}
+      lang="en"
+    >
       <meta content="app" name="apple-mobile-web-app-title" />
       <body>
         <Providers

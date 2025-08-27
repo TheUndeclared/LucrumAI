@@ -2,9 +2,6 @@ import { Metadata } from "next";
 
 import ProtocolAllocationChart from "@/components/charts/protocol-allocation-chart";
 import TradingViewChart from "@/components/charts/trading-view-chart";
-import LiveReasoningFeed, {
-  Feed,
-} from "@/components/common/live-reasoning-feed";
 import Header from "@/components/header";
 import CurvanceDecisionsTable from "@/components/tables/curvance-decisions-table";
 import TradingDecisionsTable from "@/components/tables/trading-decisions-table";
@@ -12,10 +9,49 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn, transformDecisionsData } from "@/functions";
 import { getDecisions, getTradingMetrics } from "@/lib/actions";
+import LiveReasoningFeed from "@/components/common/live-reasoning-feed";
 
 export const metadata: Metadata = {
-  title: "Dashboard",
+  title: "Profile",
 };
+
+type Feed = {
+  time: string;
+  source: string;
+  message: string;
+  color: string; // Tailwind border color
+};
+
+const feeds: Feed[] = [
+  {
+    time: "14:23",
+    source: "Model Alpha",
+    message:
+      "Detected 15% yield increase in Kamino USDC pool. Recommending position increase.",
+    color: "border-primary",
+  },
+  {
+    time: "14:22",
+    source: "Model Beta",
+    message:
+      "Confirmed: Low volatility environment supports yield farming strategy.",
+    color: "border-blue-600",
+  },
+  {
+    time: "14:20",
+    source: "Risk Assessment",
+    message:
+      "Market conditions stable. Risk level: Medium. Proceed with caution.",
+    color: "border-yellow-600",
+  },
+  {
+    time: "14:18",
+    source: "Model Alpha",
+    message:
+      "SOL price action suggests continued uptrend. Maintaining bullish outlook.",
+    color: "border-primary",
+  },
+];
 
 export default async function Page() {
   const [decisionsResult, metricsResult] = await Promise.allSettled([
@@ -70,8 +106,6 @@ export default async function Page() {
             : "border-yellow-600",
     }));
 
-  console.log({ liveReasoningFeed });
-
   return (
     <div
       className={cn(
@@ -116,11 +150,6 @@ export default async function Page() {
         </div>
 
         <div className="flex-1 border-x-1 p-4 max-w-full space-y-6">
-          {/* TradingView Chart */}
-          <div className="rounded-md border overflow-hidden">
-            <TradingViewChart />
-          </div>
-
           {/* Decisions History */}
           {/* <DecisionsHistory
             curvanceDecisions={curvanceDecisions}

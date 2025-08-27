@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   ColumnDef,
@@ -11,19 +11,19 @@ import {
   SortingState,
   useReactTable,
   VisibilityState,
-} from '@tanstack/react-table';
-import { useState } from 'react';
+} from "@tanstack/react-table";
+import { useState } from "react";
 
 import {
   DataTablePagination,
-  DataTableViewOptions,
+  // DataTableViewOptions,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/data-table';
+} from "@/components/ui/data-table";
 // import { Input } from '@/components/ui/input';
 
 interface DataTableProps<TData, TValue> {
@@ -59,36 +59,45 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
     },
+    // enableHiding: false, // Disable hiding columns
   });
 
   return (
-    <div className="flex w-full flex-col gap-4">
-      <div className="flex items-center">
-        {/* <Input
+    <div className="space-y-4">
+      {/* <div className="flex items-center">
+        <Input
           className="max-w-sm"
           placeholder="Filter emails..."
           value={(table.getColumn('email')?.getFilterValue() as string) ?? ''}
           onChange={(event) =>
             table.getColumn('email')?.setFilterValue(event.target.value)
           }
-        /> */}
-        {title && <h1 className="font-semibold tracking-tight text-xl">{title}</h1>}
+        />
+        {title && (
+          <h1 className="font-semibold tracking-tight text-xl">{title}</h1>
+        )}
         <DataTableViewOptions table={table} />
-      </div>
-      <div className="rounded-md border">
+      </div> */}
+      <div className="rounded-md border overflow-hidden">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow
+                key={headerGroup.id}
+                className="bg-gray-700/40 hover:bg-gray-700/30"
+              >
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead
+                      key={header.id}
+                      style={{ minWidth: header.getSize() }}
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
                     </TableHead>
                   );
                 })}
@@ -100,13 +109,14 @@ export function DataTable<TData, TValue>({
               table.getRowModel()?.rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
+                  className="hover:bg-gray-700/20"
+                  data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext(),
+                        cell.getContext()
                       )}
                     </TableCell>
                   ))}
