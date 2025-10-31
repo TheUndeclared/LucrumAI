@@ -27,13 +27,13 @@ export default function Footer() {
           </p>
           <div className="flex space-x-6">
             <Link
-              href="https://twitter.com/MonetAI_xyz"
+              href="https://x.com/Lucrum_AI"
               className="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary"
             >
               <Twitter />
             </Link>
             <Link
-              href="https://github.com/MonadAI-xyz/monetai"
+              href="https://github.com/TheUndeclared/LucrumAI"
               className="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary"
             >
               <Github />

@@ -76,14 +76,15 @@ export default function Header() {
 
         {/* Right: CTA + Mobile Menu */}
         <div className="flex items-center gap-2">
+          {/* Desktop CTA */}
           <Button
             asChild
-            className="hidden sm:inline-flex bg-primary hover:bg-primary/90"
+            className="hidden sm:inline-flex bg-primary text-black hover:bg-primary/90"
           >
-            <Link href="https://monetai.monadai.xyz/">Launch App</Link>
+            <Link href="https://app.lucrumai.org/">Launch App</Link>
           </Button>
 
-          {/* Mobile Nav Trigger */}
+          {/* Mobile Menu */}
           <Sheet>
             <SheetTrigger asChild>
               <Button
@@ -94,25 +95,33 @@ export default function Header() {
                 <MenuIcon className="h-6 w-6" />
               </Button>
             </SheetTrigger>
+
             <SheetContent
               side="right"
-              className="bg-[rgba(0,0,0,0.95)] text-white"
+              className="bg-[rgba(0,0,0,0.95)] text-white p-6 h-full flex flex-col justify-start"
             >
-              <nav className="flex flex-col gap-4 mt-6 text-lg">
+              <nav className="flex flex-col gap-6 mt-4 text-lg">
                 {menuItems.map((item, index) => (
                   <Link
                     key={index}
                     href={item.href}
-                    className="hover:text-primary transition-colors"
+                    className="hover:text-primary transition-colors duration-200"
                   >
                     {item.title}
                   </Link>
                 ))}
+
+                {/* Mobile CTA */}
                 <Button
                   asChild
-                  className="mt-4 bg-primary text-white hover:bg-primary/90"
+                  className="mt-6 w-full rounded-lg bg-primary text-black hover:bg-primary/90 transition-colors duration-200"
                 >
-                  <Link href="https://monetai.monadai.xyz/">Launch App</Link>
+                  <Link
+                    href="https://monetai.monadai.xyz/"
+                    className="w-full text-center py-2"
+                  >
+                    Launch App
+                  </Link>
                 </Button>
               </nav>
             </SheetContent>

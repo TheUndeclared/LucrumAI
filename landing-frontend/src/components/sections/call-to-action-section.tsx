@@ -35,7 +35,7 @@ export default function CallToActionSection() {
             asChild
             className="inline-flex text-base h-12 px-8 bg-primary hover:bg-primary/90 transition-all duration-300 shadow-none hover:shadow-[0_0_36.66px_rgba(0,255,135,0.55)]"
           >
-            <Link href="https://monetai.monadai.xyz/">Launch App Now</Link>
+            <Link href="https://app.lucrumai.org/">Launch App Now</Link>
           </Button>
           <Button
             asChild
