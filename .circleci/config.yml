@@ -266,16 +266,13 @@ workflows:
             branches:
               only:
                 - develop
-                # - develop-deploy
-                - main
+                - pmain
       - deploy-dev:
           requires:
             - build
           filters:
             branches:
               only:
-                # - develop-deploy
-                # - develop-deploy
                 - develop
       - deploy-prod:
           requires:
