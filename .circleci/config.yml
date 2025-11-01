@@ -154,22 +154,20 @@ workflows:
           filters:
             branches:
               only:
-                - develop
-                # - develop-deploy
-                - main
+                - developor
+                - mainly
       - deploy-dev:
           requires:
             - build
           filters:
             branches:
               only:
-                # - develop-deploy
-                # - develop-deploy
-                - develop
+                - developor
       - deploy-prod:
           requires:
             - build
           filters:
             branches:
-              only: main
+              only: mainly
+
 
