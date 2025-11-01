@@ -7,140 +7,27 @@ jobs:
   build:
     docker:
       - image: cimg/node:20.18.0
-    working_directory: ~/LucrumAI
+    working_directory: ~/LucrumAI/api
     steps:
       - checkout:
           path: ~/LucrumAI
+      - add_ssh_keys:
+          fingerprints:
+            - "${GITHUB_SSH_FINGERPRINT}"  # You'll need to add this in CircleCI project settings
       - run:
-          name: Setup Git with PAT Authentication
+          name: Setup Git Submodules
           command: |
-            # Configure git to use PAT for all GitHub operations
-            git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "https://github.com/"
             git config --global url."https://${GITHUB_PAT}@github.com/".insteadOf "git@github.com:"
-      - run:
-          name: Update .gitmodules to use HTTPS
-          command: |
-            echo "=== Original .gitmodules ==="
-            cat .gitmodules
-            
-            # Convert SSH URLs to HTTPS in .gitmodules
-            sed -i 's|git@github.com:|https://github.com/|g' .gitmodules
-            
-            echo "=== Updated .gitmodules ==="
-            cat .gitmodules
-      - run:
-          name: Initialize and Update Submodules
-          command: |
-            echo "=== Initializing submodules ==="
             git submodule init
-            
-            echo "=== Updating submodules ==="
-            git submodule update --init --recursive
-            
-            echo "=== Submodule status ==="
-            git submodule status
-            
-            echo "=== Verifying submodule directory ==="
-            if [ -d "api/src/services" ]; then
-              echo "✅ Submodule directory exists"
-              ls -la api/src/services
-              echo "Files in submodule:"
-              find api/src/services -type f | head -10
-            else
-              echo "❌ ERROR: Submodule directory does not exist"
-              echo "Trying alternative submodule update..."
-              
-              # Alternative method - clone directly with PAT
-              SUBMODULE_URL=$(git config -f .gitmodules --get submodule.api/src/services.url)
-              echo "Original Submodule URL: $SUBMODULE_URL"
-              
-              # Convert URL to include PAT authentication with correct repo name
-              AUTH_URL="https://${GITHUB_PAT}@github.com/TheUndeclared/LucrumAIPrivate.git"
-              echo "Authenticated URL: https://***@github.com/TheUndeclared/LucrumAIPrivate.git"
-              
-              # Remove existing directory if it exists but is empty
-              rm -rf api/src/services
-              
-              # Create parent directory
-              mkdir -p api/src
-              
-              # Clone with authentication
-              git clone "$AUTH_URL" temp_services
-              
-              echo "=== Examining cloned repository structure ==="
-              echo "Contents of temp_services:"
-              ls -la temp_services/
-              
-              echo "Looking for services directory..."
-              find temp_services -name "services" -type d || echo "No services directory found"
-              
-              # Remove existing api/src/services if it exists
-              rm -rf api/src/services
-              
-              # Check if we have a nested api structure or direct services
-              if [ -d "temp_services/api/src/services" ]; then
-                echo "Found nested api/src/services structure - extracting services..."
-                mkdir -p api/src
-                cp -r temp_services/api/src/services api/src/
-                rm -rf temp_services
-              elif [ -d "temp_services/services" ]; then
-                echo "Found direct services directory - using it..."
-                mkdir -p api/src
-                cp -r temp_services/services api/src/
-                rm -rf temp_services
-              else
-                echo "Repository structure doesn't match expected patterns"
-                echo "Using entire repository as services..."
-                mkdir -p api/src
-                cp -r temp_services api/src/services
-                rm -rf temp_services/.git  # Remove git directory from copied content
-              fi
-              
-              # Check if it worked
-              if [ -d "api/src/services" ] && [ "$(ls -A api/src/services)" ]; then
-                echo "✅ Manual clone successful"
-                ls -la api/src/services
-                
-                # Initialize the cloned directory as a proper submodule
-                cd api/src/services
-                git checkout main 2>/dev/null || git checkout master 2>/dev/null || echo "Using default branch"
-                cd ../../../
-                
-                echo "Submodule setup completed"
-              else
-                echo "❌ Manual clone also failed"
-                echo "Checking if GITHUB_PAT is set..."
-                if [ -z "$GITHUB_PAT" ]; then
-                  echo "ERROR: GITHUB_PAT environment variable is not set!"
-                else
-                  echo "GITHUB_PAT is set (length: ${#GITHUB_PAT})"
-                fi
-                exit 1
-              fi
-            fi
-      - run:
-          name: Debug .gitmodules & GIT env
-          command: |
-            echo "=== Project Structure ==="
-            echo "Current directory: $(pwd)"
-            echo "API directory contents:"
-            ls -la api/
-            echo "API/src directory contents:"
-            ls -la api/src/
-            echo "Services directory contents:"
-            ls -la api/src/services/ | head -10
-            echo "Hamza Services directory:"
-            ls -a api/src/services/
-            pwd
-
+            git submodule update --recursive
       - run:
           name: Install Dependencies
-          command: cd api/ && npm install
+          command: npm install
       - run:
           name: Build Application
-          command: cd api/ && npm run build
+          command: npm run build
       - persist_to_workspace:
-          root: api/
+          root: .
           paths:
             - build/
             - package.json
@@ -178,6 +65,7 @@ jobs:
                       BONDING_CONTRACT_ADDRESS FAUCET_CONTRACT_ADDRESS FAUCET_ROLE_PRIVATE_KEY \
                       DISCORD_CLIENT_ID DISCORD_CLIENT_SECRET DISCORD_REDIRECT_URI DISCORD_SERVER_ID FAUCET_URL \
                       TERMINAL_RATE_LIMIT_DURATION_IN_SECONDS ENCRYPTION_KEY \
+                      XAI_API_KEY BIRDEYE_API_KEY \
                       TWITTER_CLIENT_ID TWITTER_CLIENT_SECRET TWITTER_REDIRECT_URI TWITTER_ACCOUNT_HANDLER; do
 
               prefixed_var="PROD_${var}"
@@ -232,6 +120,7 @@ jobs:
                       BONDING_CONTRACT_ADDRESS FAUCET_CONTRACT_ADDRESS FAUCET_ROLE_PRIVATE_KEY \
                       DISCORD_CLIENT_ID DISCORD_CLIENT_SECRET DISCORD_REDIRECT_URI DISCORD_SERVER_ID FAUCET_URL \
                       TERMINAL_RATE_LIMIT_DURATION_IN_SECONDS ENCRYPTION_KEY \
+                      XAI_API_KEY BIRDEYE_API_KEY \
                       TWITTER_CLIENT_ID TWITTER_CLIENT_SECRET TWITTER_REDIRECT_URI TWITTER_ACCOUNT_HANDLER; do
 
               prefixed_var="DEV_${var}"
@@ -265,19 +154,20 @@ workflows:
           filters:
             branches:
               only:
-                - develop
-                - pmain
+                - developor
+                - mainly
       - deploy-dev:
           requires:
             - build
           filters:
             branches:
               only:
-                - develop
+                - developor
       - deploy-prod:
           requires:
             - build
           filters:
             branches:
-              only: main
+              only: mainly
+
 
