@@ -3,11 +3,65 @@
 import { TradingBalance } from "@/components/charts/protocol-allocation-chart";
 import { generateQueryParamsString } from "@/functions";
 import { fetchWrapper } from "@/lib/fetch-wrapper";
-import { IQueryData, ITradingHistoryData, OHLCVPairItem } from "@/types";
+import { ILendingHistoryData, IQueryData, ITradingHistoryData, OHLCVPairItem } from "@/types";
 
 type TradingHistoryResponse = {
-  count: number; // Total number of records
-  rows: Array<ITradingHistoryData>;
+  message: string;
+  data: Array<ITradingHistoryData>;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+};
+
+export type DecisionsResponse = {
+  data: {
+    count: number;
+    rows: Array<{
+      _id: string;
+      decision: {
+        trading?: {
+          action: string;
+          pair: string | null;
+          shouldExecute: boolean;
+          reasoning: {
+            marketCondition: string;
+            technicalAnalysis: string;
+            riskAssessment: string;
+            pairSelection: string;
+            comparativeAnalysis: {
+              volatilityComparison: string;
+              trendAlignment: string;
+              relativeStrength: string;
+              modelAgreement: string;
+              correlationImpact?: string;
+            };
+          };
+          confidence: string;
+        };
+        lending?: {
+          action: string;
+          token: string | null;
+          amountPercentage?: number;
+          apyExpected?: number;
+          shouldExecute: boolean;
+          reasoning: string;
+          riskLevel?: string;
+          poolSizeUsd?: number;
+          poolSizeFormatted?: string;
+          utilizationRate?: string;
+          reserveAddress?: string;
+          supplyApyFormatted?: string;
+          confidence: string;
+        };
+      };
+      id: string;
+      createdAt: string;
+      updatedAt: string;
+    }>;
+  };
 };
 
 type OHLCVPairResponse = {
@@ -25,7 +79,7 @@ type TradingBalancesResponse = {
 type TradingMetricsResponse = {
   message: string;
   data: {
-    totalBalanceTraded24h: number;
+    totalPnl24Hours: number;
     pnl24Hours: number;
     averageAPY: number;
     tradeCount24h: number;
@@ -34,11 +88,26 @@ type TradingMetricsResponse = {
   };
 };
 
+type LendingHistoryResponse = {
+  success: boolean;
+  data: {
+    records: Array<ILendingHistoryData>;
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+  };
+};
+
 // Get trading history
-export const getTradingHistory = async () => {
+export const getTradingHistory = async (page: number = 1, limit: number = 10) => {
   // Send request
   const response = await fetchWrapper<TradingHistoryResponse>(
-    "/api/trading/history",
+    `/api/trading/history?page=${page}&limit=${limit}`,
     {
       method: "GET",
     }
@@ -47,11 +116,11 @@ export const getTradingHistory = async () => {
   return response;
 };
 
-// Get decisions
-export const getDecisions = async () => {
-  // Send request
-  const response = await fetchWrapper<TradingHistoryResponse>(
-    "/api/llms/decisions",
+// Get decisions.
+export const getDecisions = async (limit: number = 10, offset: number = 0) => {
+  // Send request.
+  const response = await fetchWrapper<DecisionsResponse>(
+    `/api/llms/decisions?limit=${limit}&offset=${offset}`,
     {
       method: "GET",
       headers: { "Cache-Control": "no-cache, no-store, must-revalidate" },
@@ -119,6 +188,19 @@ export const getTradingMetrics = async () => {
   // Send request
   const response = await fetchWrapper<TradingMetricsResponse>(
     "/api/trading/metrics",
+    {
+      method: "GET",
+    }
+  );
+
+  return response;
+};
+
+// Get lending history
+export const getLendingHistory = async (page: number = 1, limit: number = 20) => {
+  // Send request
+  const response = await fetchWrapper<LendingHistoryResponse>(
+    `/api/lending/history?page=${page}&limit=${limit}`,
     {
       method: "GET",
     }

@@ -1,3 +1,6 @@
+import "@/styles/main.css";
+import "@rainbow-me/rainbowkit/styles.css";
+
 import { Metadata, Viewport } from "next";
 import type { PropsWithChildren } from "react";
 
@@ -6,9 +9,6 @@ import { CoreLayout } from "@/components/core-layout";
 import { Toaster } from "@/components/ui/sonner";
 import { spaceGrotesk } from "@/fonts";
 import { cn } from "@/functions/cn";
-
-import "@/styles/main.css";
-import "@rainbow-me/rainbowkit/styles.css";
 
 export const viewport: Viewport = {
   themeColor: "black",
@@ -38,17 +38,12 @@ const GlobalLayout = ({ children }: PropsWithChildren) => {
   return (
     <html
       suppressHydrationWarning
-      className={cn(spaceGrotesk.variable)}
+      className={cn("dark", spaceGrotesk.variable)}
       lang="en"
     >
       <meta content="app" name="apple-mobile-web-app-title" />
       <body>
-        <Providers
-          disableTransitionOnChange
-          enableSystem
-          attribute="class"
-          defaultTheme="system"
-        >
+        <Providers>
           <CoreLayout>{children}</CoreLayout>
           <Toaster />
         </Providers>

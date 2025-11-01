@@ -12,6 +12,18 @@ type GetMessageResponse = {
 type VerifySignedMessageResponse = {
   data: {
     token: string;
+    custodialWallet: {
+      createdAt: null;
+      hasCustodialWallet: boolean;
+      isActive: boolean;
+      walletAddress: null;
+    };
+    user: {
+      id: string;
+      wallet_address: string;
+      createdAt: string;
+      updatedAt: string;
+    };
   };
 };
 

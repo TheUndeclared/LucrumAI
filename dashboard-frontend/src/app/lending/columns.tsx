@@ -2,77 +2,156 @@
 
 import {ColumnDef} from '@tanstack/react-table';
 import {format} from "date-fns"
-import {MoreHorizontal} from 'lucide-react';
+import Image from 'next/image';
 
-import {Button} from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import {DataTableColumnHeader} from '@/components/ui/data-table';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import {ILendingHistoryTable} from '@/types';
 
-type LendingHistoryTableProps = {
-  id: string;
-  txDate: string;
-  txDescription: string;
-  txHash: string;
+// Helper function to get token image
+const getTokenImage = (token: string): string | null => {
+  const tokenImages: { [key: string]: string } = {
+    'SOL': '/images/solana.avif',
+    'WSOL': '/images/solana.avif',
+    'USDT': '/images/usdt.png',
+    'USDC': '/images/usdc.png',
+    'ETH': '/images/ethereum.avif',
+    'WETH': '/images/ethereum.avif',
+    'BTC': '/images/btc.png',
+    'WBTC': '/images/btc.png',
+    'RAY': '/images/raydium.png',
+    'GRASS': '/images/grass.png',
+    'JUP': '/images/jupiter.png',
+  };
+  return tokenImages[token] || null; // Return null for unknown tokens
 };
 
+// Helper function to get platform image
+const getPlatformImage = (platform: string): string | null => {
+  const platformImages: { [key: string]: string } = {
+    'KAMINO': '/images/kamino.png',
+  };
+  return platformImages[platform] || null; // Return null for unknown platforms
+};
 
-export const columns: ColumnDef<LendingHistoryTableProps>[] = [
+// Helper function to get action color
+const getActionColor = (action: string): "default" | "secondary" | "destructive" | "outline" => {
+  switch (action) {
+    case 'LEND':
+      return 'default';
+    case 'BORROW':
+      return 'destructive';
+    case 'DEPOSIT':
+      return 'default';
+    case 'WITHDRAW':
+      return 'destructive';
+    default:
+      return 'outline';
+  }
+};
+
+// Helper function to get status color
+const getStatusColor = (status: string): "default" | "secondary" | "destructive" | "outline" => {
+  switch (status) {
+    case 'COMPLETED':
+    case 'SUCCESS':
+      return 'default';
+    case 'PENDING':
+    case 'PROCESSING':
+      return 'secondary';
+    case 'FAILED':
+    case 'ERROR':
+      return 'destructive';
+    default:
+      return 'outline';
+  }
+};
+
+export const columns: ColumnDef<ILendingHistoryTable>[] = [
   {
     accessorKey: 'txDate',
     header: 'Tx. Date',
     cell: ({ row }) => (
       <div className="capitalize">
-        {row.getValue('txDate') ? format(row.getValue('txDate'), 'MMMM dd, yyyy') : '-'}
+        {row.getValue('txDate') ? format(new Date(row.getValue('txDate')), 'MMM dd, yyyy HH:mm') : '-'}
       </div>
     ),
   },
+  {
+    accessorKey: 'action',
+    header: 'Action',
+    cell: ({ row }) => {
+      const action = row.getValue('action') as string;
+      return (
+        <Badge variant={getActionColor(action)}>
+          {action}
+        </Badge>
+      );
+    },
+  },
+  {
+    accessorKey: 'pair',
+    header: 'Pair',
+    cell: ({ row }) => {
+      const pair = row.getValue('pair') as string;
+      const [token, platform] = pair.split('-');
+      const tokenImage = getTokenImage(token);
+      const platformImage = getPlatformImage(platform);
+      
+      return (
+        <div className="flex items-center gap-2">
+          {tokenImage ? (
+            <Image
+              alt={token}
+              className="rounded-full"
+              height={24}
+              src={tokenImage}
+              width={24}
+            />
+          ) : null}
+          {platformImage ? (
+            <Image
+              alt={platform}
+              className="rounded-full"
+              height={24}
+              src={platformImage}
+              width={24}
+            />
+          ) : null}
+        </div>
+      );
+    },
+  },
+
   {
     accessorKey: 'txDescription',
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Tx. Description" />
     ),
-  },
-  {
-    accessorKey: 'txHash',
-    header: 'Tx. Hash',
     cell: ({ row }) => (
-      <div className="font-medium">{row.getValue('txHash')}</div>
+      <div className="font-medium">
+        {row.getValue('txDescription')}
+      </div>
     ),
   },
   {
-    id: 'actions',
-    header: 'Action',
-    enableHiding: false,
+    accessorKey: 'amount',
+    header: 'Amount',
+    cell: ({ row }) => (
+      <div className="font-mono">
+        {row.getValue('amount')}
+      </div>
+    ),
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
     cell: ({ row }) => {
-      const payment = row.original;
-
+      const status = row.getValue('status') as string;
       return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button className="h-8 w-8 p-0" variant="ghost">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem
-              onClick={() => navigator.clipboard.writeText(payment.id)}
-            >
-              Copy payment ID
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>View customer</DropdownMenuItem>
-            <DropdownMenuItem>View payment details</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Badge variant={getStatusColor(status)}>
+          {status}
+        </Badge>
       );
     },
   },

@@ -2,11 +2,11 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   MoreHorizontalIcon,
-} from 'lucide-react';
-import * as React from 'react';
+} from 'lucide-react'
+import * as React from 'react'
 
-import { Button, buttonVariants } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Button, buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 function Pagination({ className, ...props }: React.ComponentProps<'nav'>) {
   return (
@@ -17,7 +17,7 @@ function Pagination({ className, ...props }: React.ComponentProps<'nav'>) {
       role="navigation"
       {...props}
     />
-  );
+  )
 }
 
 function PaginationContent({
@@ -30,17 +30,17 @@ function PaginationContent({
       data-slot="pagination-content"
       {...props}
     />
-  );
+  )
 }
 
 function PaginationItem({ ...props }: React.ComponentProps<'li'>) {
-  return <li data-slot="pagination-item" {...props} />;
+  return <li data-slot="pagination-item" {...props} />
 }
 
 type PaginationLinkProps = {
-  isActive?: boolean;
+  isActive?: boolean
 } & Pick<React.ComponentProps<typeof Button>, 'size' | 'icon'> &
-  React.ComponentProps<'a'>;
+  React.ComponentProps<'a'>
 
 function PaginationLink({
   className,
@@ -52,17 +52,20 @@ function PaginationLink({
     <a
       aria-current={isActive ? 'page' : undefined}
       className={cn(
+        'cursor-pointer',
         buttonVariants({
           variant: isActive ? 'outline' : 'ghost',
           icon,
         }),
-        className,
+        isActive &&
+          'border-primary text-primary font-semibold shadow-sm bg-primary/10',
+        className
       )}
       data-active={isActive}
       data-slot="pagination-link"
       {...props}
     />
-  );
+  )
 }
 
 function PaginationPrevious({
@@ -79,7 +82,7 @@ function PaginationPrevious({
       <ChevronLeftIcon />
       <span className="hidden sm:block">Previous</span>
     </PaginationLink>
-  );
+  )
 }
 
 function PaginationNext({
@@ -96,7 +99,7 @@ function PaginationNext({
       <span className="hidden sm:block">Next</span>
       <ChevronRightIcon />
     </PaginationLink>
-  );
+  )
 }
 
 function PaginationEllipsis({
@@ -113,7 +116,7 @@ function PaginationEllipsis({
       <MoreHorizontalIcon className="size-4" />
       <span className="sr-only">More pages</span>
     </span>
-  );
+  )
 }
 
 export {
@@ -124,4 +127,4 @@ export {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-};
+}

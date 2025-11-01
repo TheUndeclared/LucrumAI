@@ -1,6 +1,6 @@
 "use client";
 
-import { useWallet, useConnection } from "@solana/wallet-adapter-react";
+import { useConnection,useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";

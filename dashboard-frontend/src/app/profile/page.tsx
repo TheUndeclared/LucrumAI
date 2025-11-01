@@ -1,111 +1,18 @@
 import { Metadata } from "next";
 
-import ProtocolAllocationChart from "@/components/charts/protocol-allocation-chart";
-import TradingViewChart from "@/components/charts/trading-view-chart";
+import CustodialWalletSection from "@/components/common/custodial-wallet-section";
+import RefreshProfileButton from "@/components/common/refresh-profile-button";
 import Header from "@/components/header";
-import CurvanceDecisionsTable from "@/components/tables/curvance-decisions-table";
-import TradingDecisionsTable from "@/components/tables/trading-decisions-table";
-import { Progress } from "@/components/ui/progress";
+import ClientLendingHistoryTable from "@/components/tables/client-lending-history-table";
+import ClientTradingHistoryTable from "@/components/tables/client-trading-history-table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn, transformDecisionsData } from "@/functions";
-import { getDecisions, getTradingMetrics } from "@/lib/actions";
-import LiveReasoningFeed from "@/components/common/live-reasoning-feed";
+import { cn } from "@/functions";
 
 export const metadata: Metadata = {
   title: "Profile",
 };
 
-type Feed = {
-  time: string;
-  source: string;
-  message: string;
-  color: string; // Tailwind border color
-};
-
-const feeds: Feed[] = [
-  {
-    time: "14:23",
-    source: "Model Alpha",
-    message:
-      "Detected 15% yield increase in Kamino USDC pool. Recommending position increase.",
-    color: "border-primary",
-  },
-  {
-    time: "14:22",
-    source: "Model Beta",
-    message:
-      "Confirmed: Low volatility environment supports yield farming strategy.",
-    color: "border-blue-600",
-  },
-  {
-    time: "14:20",
-    source: "Risk Assessment",
-    message:
-      "Market conditions stable. Risk level: Medium. Proceed with caution.",
-    color: "border-yellow-600",
-  },
-  {
-    time: "14:18",
-    source: "Model Alpha",
-    message:
-      "SOL price action suggests continued uptrend. Maintaining bullish outlook.",
-    color: "border-primary",
-  },
-];
-
-export default async function Page() {
-  const [decisionsResult, metricsResult] = await Promise.allSettled([
-    getDecisions(),
-    getTradingMetrics(),
-  ]);
-
-  let tradingDecisions = [];
-  let curvanceDecisions = [];
-  let averageAPY, pnl24Hours, totalBalanceTraded24h;
-
-  // Decisions History
-  if (decisionsResult.status === "fulfilled") {
-    const { tradingDecisions: t, curvanceDecisions: c } =
-      transformDecisionsData(decisionsResult.value?.data?.rows || []);
-    tradingDecisions = t;
-    curvanceDecisions = c;
-  }
-
-  // Trading Metrics
-  if (metricsResult.status === "fulfilled") {
-    ({ averageAPY, pnl24Hours, totalBalanceTraded24h } =
-      metricsResult.value?.data?.data);
-  }
-
-  console.log("Trading Decisions:", tradingDecisions);
-  console.log("Curvance Decisions:", curvanceDecisions);
-  console.log({ averageAPY, pnl24Hours, totalBalanceTraded24h });
-
-  const confidenceScore =
-    tradingDecisions?.[0]?.confidence === "LOW"
-      ? 30
-      : tradingDecisions?.[0]?.confidence === "HIGH"
-        ? 80
-        : 0;
-
-  const liveReasoningFeed: Feed[] = tradingDecisions
-    .slice(0, 4)
-    .map((decision) => ({
-      time: new Date(decision.createdAt).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false, // force 24h format
-      }),
-      source: decision.pair,
-      message: decision.technicalAnalysis,
-      color:
-        decision.confidence === "HIGH"
-          ? "border-primary"
-          : decision.confidence === "MEDIUM"
-            ? "border-blue-600"
-            : "border-yellow-600",
-    }));
-
+export default function Page() {
   return (
     <div
       className={cn(
@@ -115,109 +22,61 @@ export default async function Page() {
       <Header />
 
       {/* Main Content */}
-      <main className="flex">
-        <div className="w-[320px] p-6 bg-secondary space-y-4">
-          <h2 className="text-xl text-primary mb-6">Portfolio Overview</h2>
-
-          {/* Total Balance */}
-          <div className="border rounded-md p-4 bg-background">
-            <h3 className="text-muted-foreground text-sm">
-              Total Balance Traded
-            </h3>
-            <div className="text-primary text-2xl">
-              ${totalBalanceTraded24h || 0}
+      <main className="w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 mt-16">
+        {/* Responsive layout: stack on mobile, 2-col on lg+ */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Sidebar / Portfolio Overview */}
+          <aside className="lg:col-span-4 xl:col-span-3">
+            <div className="rounded-xl bg-secondary p-4 sm:p-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg sm:text-xl text-primary">Portfolio Overview</h2>
+                <RefreshProfileButton />
+              </div>
+              <CustodialWalletSection />
             </div>
-            {/* <div className="text-primary text-sm">+12.34% (24h)</div> */}
-          </div>
+          </aside>
 
-          {/* 24h PnL */}
-          <div className="border rounded-md p-4 bg-background">
-            <h3 className="text-muted-foreground text-sm">24h PnL</h3>
-            <div className="text-primary text-2xl">+${pnl24Hours || 0}</div>
-            {/* <div className="text-primary text-sm">+2.61%</div> */}
-          </div>
+          {/* Content */}
+          <section className="lg:col-span-8 xl:col-span-9">
+            <div className="rounded-xl border bg-secondary p-4 sm:p-6 space-y-4">
+              <h2 className="text-lg sm:text-xl text-primary">Transaction History</h2>
 
-          {/* Avg. APY */}
-          <div className="border rounded-md p-4 bg-background">
-            <h3 className="text-muted-foreground text-sm">Avg. APY</h3>
-            <div className="text-primary text-2xl">{averageAPY || 0}%</div>
-            {/* <div className="text-primary text-sm">Across 5 protocols</div> */}
-            <div className="text-primary text-sm">Against 1 protocol</div>
-          </div>
+              <Tabs className="w-full" defaultValue="trading">
+                {/* Responsive Tabs: grid (mobile) → inline (md+) */}
+                <TabsList className="w-full bg-gray-700/40 p-1 rounded-lg grid grid-cols-2 gap-1 md:inline-flex md:w-auto">
+                  <TabsTrigger
+                    className="cursor-pointer data-[state=active]:bg-gray-900 rounded-md px-3 py-2 text-sm md:text-base"
+                    value="trading"
+                  >
+                    Trading Transaction History
+                  </TabsTrigger>
+                  <TabsTrigger
+                    className="cursor-pointer data-[state=active]:bg-gray-900 rounded-md px-3 py-2 text-sm md:text-base"
+                    value="yieldFarming"
+                  >
+                    Yield Farming
+                  </TabsTrigger>
+                </TabsList>
 
-          {/* Protocol Allocation */}
-          <ProtocolAllocationChart />
-        </div>
+                <TabsContent className="mt-4" value="trading">
+                  {/* Make tables scroll on small screens to avoid overflow */}
+                  <div className="overflow-x-auto -mx-4 sm:mx-0">
+                    <div className="min-w-[640px] sm:min-w-0 px-4 sm:px-0">
+                      <ClientTradingHistoryTable />
+                    </div>
+                  </div>
+                </TabsContent>
 
-        <div className="flex-1 border-x-1 p-4 max-w-full space-y-6">
-          {/* Decisions History */}
-          {/* <DecisionsHistory
-            curvanceDecisions={curvanceDecisions}
-            tradingDecisions={tradingDecisions}
-          /> */}
-          <div
-            // className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl p-4 md:min-h-min"
-            className="border rounded-md p-4 bg-secondary"
-            // className={cn(
-            //   "rounded-2xl p-6",
-            //   "bg-gradient-to-br from-gray-100 via-white to-gray-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800",
-            //   "shadow-lg hover:shadow-[0_0_8px_#7efe733d] transition-all duration-400"
-            // )}
-          >
-            <h2 className="text-xl text-primary mb-4">Decisions History</h2>
-            <Tabs className="gap-6" defaultValue="trading">
-              <TabsList className="bg-gray-700/40 self-end -mt-12">
-                <TabsTrigger
-                  className="cursor-pointer data-[state=active]:bg-gray-900"
-                  value="trading"
-                >
-                  Trading
-                </TabsTrigger>
-                <TabsTrigger
-                  className="cursor-pointer data-[state=active]:bg-gray-900"
-                  value="yieldFarming"
-                >
-                  Yield Farming
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="trading">
-                <TradingDecisionsTable data={tradingDecisions} />
-              </TabsContent>
-              <TabsContent value="yieldFarming">
-                <CurvanceDecisionsTable data={curvanceDecisions} />
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
-
-        <div className="w-[320px] p-6 bg-secondary space-y-4">
-          <h2 className="text-xl text-primary mb-6">AI Insights</h2>
-
-          {/* Model Consensus */}
-          <div className="border rounded-md p-4 bg-background">
-            <h3 className="text-muted-foreground mb-3">Model Consensus</h3>
-            <p className="text-gray-300 text-sm">
-              {tradingDecisions?.[0]?.modelAgreement || "N/A"}
-            </p>
-          </div>
-
-          {/* Confidence Score */}
-          <div className="border rounded-md p-4 bg-background">
-            <h3 className="text-muted-foreground mb-3">Confidence Score</h3>
-            <div className="flex items-center gap-3">
-              {/* Percentage */}
-              <span className="text-xl text-primary">{confidenceScore}%</span>
-
-              {/* Progress Bar */}
-              <Progress
-                className="h-2 flex-1 bg-muted dark:bg-[#374151] [&_[data-slot=progress-indicator]]:bg-primary [&_[data-slot=progress-indicator]]:bg-linear-0"
-                value={confidenceScore}
-              />
+                <TabsContent className="mt-4" value="yieldFarming">
+                  <div className="overflow-x-auto -mx-4 sm:mx-0">
+                    <div className="min-w-[640px] sm:min-w-0 px-4 sm:px-0">
+                      <ClientLendingHistoryTable />
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
             </div>
-          </div>
-
-          {/* Live Reasoning Feed */}
-          <LiveReasoningFeed feedData={liveReasoningFeed} />
+          </section>
         </div>
       </main>
     </div>

@@ -1,20 +1,15 @@
 "use client";
 
-import { ThemeProvider as NextThemesProvider } from "next-themes";
-import { ComponentProps } from "react";
-
 import { SolanaProvider } from "@/providers/solana-provider";
+import TanstackProvider from "@/providers/tanstack-provider";
 import WalletProvider from "@/providers/wallet-provider";
 
-export const Providers = ({
-  children,
-  ...props
-}: ComponentProps<typeof NextThemesProvider>) => {
+export const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
-    <NextThemesProvider {...props}>
-      <WalletProvider>
+    <WalletProvider>
+      <TanstackProvider>
         <SolanaProvider>{children}</SolanaProvider>
-      </WalletProvider>
-    </NextThemesProvider>
+      </TanstackProvider>
+    </WalletProvider>
   );
 };

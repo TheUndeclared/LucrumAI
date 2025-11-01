@@ -26,16 +26,29 @@ import {
 } from "@/components/ui/data-table";
 // import { Input } from '@/components/ui/input';
 
+interface PaginationProps {
+  page: number;
+  pageSize: number;
+  totalPages: number;
+  totalRecords: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
+}
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   title?: string;
+  loading?: boolean;
+  pagination?: PaginationProps;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   title,
+  loading = false,
+  pagination,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -43,7 +56,7 @@ export function DataTable<TData, TValue>({
   const [rowSelection, setRowSelection] = useState({});
 
   const table = useReactTable({
-    data,
+    data: data || [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -60,6 +73,13 @@ export function DataTable<TData, TValue>({
       rowSelection,
     },
     // enableHiding: false, // Disable hiding columns
+    manualPagination: !!pagination, // Enable manual pagination if pagination props are provided
+    pageCount: pagination?.totalPages || 0,
+    initialState: {
+      pagination: {
+        pageSize: 5,
+      },
+    },
   });
 
   return (
@@ -105,7 +125,19 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel()?.rows?.length ? (
+            {loading ? (
+              <TableRow>
+                <TableCell
+                  className="h-24 text-center"
+                  colSpan={columns.length}
+                >
+                  <div className="flex items-center justify-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                    <span>Loading...</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel()?.rows?.length ? (
               table.getRowModel()?.rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -135,7 +167,14 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <DataTablePagination table={table} />
+      {pagination ? (
+        <DataTablePagination 
+          pagination={pagination}
+          table={table} 
+        />
+      ) : (
+        <DataTablePagination table={table} />
+      )}
     </div>
   );
 }

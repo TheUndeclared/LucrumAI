@@ -1,196 +1,292 @@
-import { Metadata } from "next";
+'use client'
 
-import ProtocolAllocationChart from "@/components/charts/protocol-allocation-chart";
-import TradingViewChart from "@/components/charts/trading-view-chart";
-import LiveReasoningFeed, {
-  Feed,
-} from "@/components/common/live-reasoning-feed";
-import Header from "@/components/header";
-import CurvanceDecisionsTable from "@/components/tables/curvance-decisions-table";
-import TradingDecisionsTable from "@/components/tables/trading-decisions-table";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn, transformDecisionsData } from "@/functions";
-import { getDecisions, getTradingMetrics } from "@/lib/actions";
+import { useEffect, useState } from 'react'
 
-export const metadata: Metadata = {
-  title: "Dashboard",
-};
+import AIAnalysisSection from '@/components/ai-analysis'
+import ProtocolAllocationChart from '@/components/charts/protocol-allocation-chart'
+import TradingViewChart from '@/components/charts/trading-view-chart'
+import ConfidenceScore from '@/components/common/confidence-score'
+import { Feed } from '@/components/common/live-reasoning-feed'
+import Header from '@/components/header'
+import CurvanceDecisionsTable from '@/components/tables/curvance-decisions-table'
+import TradingDecisionsTable from '@/components/tables/trading-decisions-table'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { transformDecisionsData } from '@/functions'
+import {
+  DecisionsResponse,
+  getDecisions,
+  getTradingMetrics,
+} from '@/lib/actions'
 
-export default async function Page() {
-  const [decisionsResult, metricsResult] = await Promise.allSettled([
-    getDecisions(),
-    getTradingMetrics(),
-  ]);
+export default function Page() {
+  const [tradingDecisions, setTradingDecisions] = useState<any[]>([])
+  const [curvanceDecisions, setCurvanceDecisions] = useState<any[]>([])
+  const [averageAPY, setAverageAPY] = useState<number>(0)
+  const [pnl24Hours, setPnl24Hours] = useState<number>(0)
+  const [totalPnl24Hours, setTotalPnl24Hours] = useState<number>(0)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [tableLoading, setTableLoading] = useState(false)
 
-  let tradingDecisions = [];
-  let curvanceDecisions = [];
-  let averageAPY, pnl24Hours, totalBalanceTraded24h;
+  // Helper function to format PnL value
+  const formatPnL = (value: number): string => {
+    if (value === 0) return '0'
 
-  // Decisions History
-  if (decisionsResult.status === "fulfilled") {
-    const { tradingDecisions: t, curvanceDecisions: c } =
-      transformDecisionsData(decisionsResult.value?.data?.rows || []);
-    tradingDecisions = t;
-    curvanceDecisions = c;
+    // For non-zero values, show up to 4 decimal places but remove trailing zeros
+    const formatted = value.toFixed(4)
+    return parseFloat(formatted).toString()
   }
 
-  // Trading Metrics
-  if (metricsResult.status === "fulfilled") {
-    ({ averageAPY, pnl24Hours, totalBalanceTraded24h } =
-      metricsResult.value?.data?.data);
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(5)
+  const [totalCount, setTotalCount] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
+
+  const fetchDashboardData = async (
+    page?: number,
+    size?: number,
+    isTableUpdate = false
+  ) => {
+    const currentPageNum = page ?? currentPage
+    const currentPageSize = size ?? pageSize
+    try {
+      if (isTableUpdate) {
+        setTableLoading(true)
+      } else {
+        setLoading(true)
+      }
+      setError(null)
+
+      const offset = (currentPageNum - 1) * currentPageSize
+
+      const [decisionsResult, metricsResult] = await Promise.allSettled([
+        getDecisions(currentPageSize, offset),
+        getTradingMetrics(),
+      ])
+
+      // Decisions History.
+      if (decisionsResult.status === 'fulfilled') {
+        const response = decisionsResult.value as unknown as DecisionsResponse
+        const { tradingDecisions: t, curvanceDecisions: c } =
+          transformDecisionsData(response?.data?.rows || [])
+        setTradingDecisions(t)
+        setCurvanceDecisions(c)
+
+        // Update pagination info
+        const count = response?.data?.count || 0
+        setTotalCount(count)
+        setTotalPages(Math.ceil(count / currentPageSize))
+      } else {
+        console.error('Failed to fetch decisions:', decisionsResult.reason)
+        setError('Failed to fetch decisions data')
+      }
+
+      // Trading Metrics.
+      if (
+        metricsResult.status === 'fulfilled' &&
+        metricsResult.value?.data?.data
+      ) {
+        const {
+          averageAPY: apy,
+          pnl24Hours: pnl24,
+          totalPnl24Hours: totalPnl24,
+        } = metricsResult.value.data.data
+        setAverageAPY(apy)
+        setPnl24Hours(pnl24)
+        setTotalPnl24Hours(totalPnl24)
+      } else {
+        console.error('Failed to fetch metrics:', metricsResult)
+        setError('Failed to fetch metrics data')
+      }
+
+      console.log('Dashboard data refreshed successfully')
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error)
+      setError('Failed to load dashboard data')
+    } finally {
+      if (isTableUpdate) {
+        setTableLoading(false)
+      } else {
+        setLoading(false)
+      }
+    }
   }
 
-  console.log("Trading Decisions:", tradingDecisions);
-  console.log("Curvance Decisions:", curvanceDecisions);
-  console.log({ averageAPY, pnl24Hours, totalBalanceTraded24h });
+  useEffect(() => {
+    fetchDashboardData(1, 5)
+  }, [])
 
-  const confidenceScore =
-    tradingDecisions?.[0]?.confidence === "LOW"
-      ? 30
-      : tradingDecisions?.[0]?.confidence === "HIGH"
-        ? 80
-        : 0;
+  // Pagination handlers
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    fetchDashboardData(page, pageSize, true)
+  }
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size)
+    setCurrentPage(1) // Reset to first page when changing page size
+    fetchDashboardData(1, size, true)
+  }
+
+  // Refresh data when user returns to the page (focus event)
+  useEffect(() => {
+    const handleFocus = () => {
+      // Only refresh if the page has been visible for more than 30 seconds
+      // This prevents excessive API calls when quickly switching tabs
+      const lastRefresh = localStorage.getItem('dashboardLastRefresh')
+      const now = Date.now()
+      if (!lastRefresh || now - parseInt(lastRefresh) > 30000) {
+        fetchDashboardData()
+        localStorage.setItem('dashboardLastRefresh', now.toString())
+      }
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [])
+
+  // Extract confidence.
+  const confidenceLevel = tradingDecisions?.[0]?.confidence ?? 'UNKNOWN'
 
   const liveReasoningFeed: Feed[] = tradingDecisions
     .slice(0, 4)
     .map((decision) => ({
       time: new Date(decision.createdAt).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
+        hour: '2-digit',
+        minute: '2-digit',
         hour12: false, // force 24h format
       }),
       source: decision.pair,
       message: decision.technicalAnalysis,
       color:
-        decision.confidence === "HIGH"
-          ? "border-primary"
-          : decision.confidence === "MEDIUM"
-            ? "border-blue-600"
-            : "border-yellow-600",
-    }));
+        decision.confidence === 'HIGH'
+          ? 'border-primary'
+          : decision.confidence === 'MEDIUM'
+            ? 'border-blue-600'
+            : 'border-yellow-600',
+    }))
 
-  console.log({ liveReasoningFeed });
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading dashboard data...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 mb-4">⚠️</div>
+          <p className="text-red-500 mb-4">{error}</p>
+          <button
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+            onClick={() => fetchDashboardData()}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div
-      className={cn(
-        "min-h-screen grid grid-rows-[auto_1fr] text-gray-900 dark:text-foreground transition-colors"
-      )}
-    >
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
       <Header />
-
-      {/* Main Content */}
-      <main className="flex">
-        <div className="w-[320px] p-6 bg-secondary space-y-4">
-          <h2 className="text-xl text-primary mb-6">Portfolio Overview</h2>
-
-          {/* Total Balance */}
-          <div className="border rounded-md p-4 bg-background">
-            <h3 className="text-muted-foreground text-sm">
-              Total Balance Traded
-            </h3>
-            <div className="text-primary text-2xl">
-              ${totalBalanceTraded24h || 0}
+      {/* Hero Section with Key Metrics */}
+      <div className="container mx-auto px-4 py-6 mt-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-background backdrop-blur-lg rounded-xl p-6 text-white">
+            <h3 className="text-gray-400 text-sm">Total PnL 24h</h3>
+            <div className="text-3xl font-bold mt-2">
+              {totalPnl24Hours || 0}%
             </div>
-            {/* <div className="text-primary text-sm">+12.34% (24h)</div> */}
           </div>
-
-          {/* 24h PnL */}
-          <div className="border rounded-md p-4 bg-background">
-            <h3 className="text-muted-foreground text-sm">24h PnL</h3>
-            <div className="text-primary text-2xl">+${pnl24Hours || 0}</div>
-            {/* <div className="text-primary text-sm">+2.61%</div> */}
+          <div className="bg-background backdrop-blur-lg rounded-xl p-6 text-white">
+            <h3 className="text-gray-400 text-sm">24h PnL</h3>
+            <div className="text-3xl font-bold mt-2">
+              {pnl24Hours >= 0 ? '+' : ''}${formatPnL(pnl24Hours)}
+            </div>
           </div>
-
-          {/* Avg. APY */}
-          <div className="border rounded-md p-4 bg-background">
-            <h3 className="text-muted-foreground text-sm">Avg. APY</h3>
-            <div className="text-primary text-2xl">{averageAPY || 0}%</div>
-            {/* <div className="text-primary text-sm">Across 5 protocols</div> */}
-            <div className="text-primary text-sm">Against 1 protocol</div>
-          </div>
-
-          {/* Protocol Allocation */}
-          <ProtocolAllocationChart />
-        </div>
-
-        <div className="flex-1 border-x-1 p-4 max-w-full space-y-6">
-          {/* TradingView Chart */}
-          <div className="rounded-md border overflow-hidden">
-            <TradingViewChart />
-          </div>
-
-          {/* Decisions History */}
-          {/* <DecisionsHistory
-            curvanceDecisions={curvanceDecisions}
-            tradingDecisions={tradingDecisions}
-          /> */}
-          <div
-            // className="bg-muted/50 min-h-[100vh] flex-1 rounded-xl p-4 md:min-h-min"
-            className="border rounded-md p-4 bg-secondary"
-            // className={cn(
-            //   "rounded-2xl p-6",
-            //   "bg-gradient-to-br from-gray-100 via-white to-gray-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800",
-            //   "shadow-lg hover:shadow-[0_0_8px_#7efe733d] transition-all duration-400"
-            // )}
-          >
-            <h2 className="text-xl text-primary mb-4">Decisions History</h2>
-            <Tabs className="gap-6" defaultValue="trading">
-              <TabsList className="bg-gray-700/40 self-end -mt-12">
-                <TabsTrigger
-                  className="cursor-pointer data-[state=active]:bg-gray-900"
-                  value="trading"
-                >
-                  Trading
-                </TabsTrigger>
-                <TabsTrigger
-                  className="cursor-pointer data-[state=active]:bg-gray-900"
-                  value="yieldFarming"
-                >
-                  Yield Farming
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="trading">
-                <TradingDecisionsTable data={tradingDecisions} />
-              </TabsContent>
-              <TabsContent value="yieldFarming">
-                <CurvanceDecisionsTable data={curvanceDecisions} />
-              </TabsContent>
-            </Tabs>
+          <div className="bg-background backdrop-blur-lg rounded-xl p-6 text-white">
+            <h3 className="text-gray-400 text-sm">Average APY</h3>
+            <div className="text-3xl font-bold mt-2">{averageAPY || 0}%</div>
           </div>
         </div>
 
-        <div className="w-[320px] p-6 bg-secondary space-y-4">
-          <h2 className="text-xl text-primary mb-6">AI Insights</h2>
-
-          {/* Model Consensus */}
-          <div className="border rounded-md p-4 bg-background">
-            <h3 className="text-muted-foreground mb-3">Model Consensus</h3>
-            <p className="text-gray-300 text-sm">
-              {tradingDecisions?.[0]?.modelAgreement || "N/A"}
-            </p>
-          </div>
-
-          {/* Confidence Score */}
-          <div className="border rounded-md p-4 bg-background">
-            <h3 className="text-muted-foreground mb-3">Confidence Score</h3>
-            <div className="flex items-center gap-3">
-              {/* Percentage */}
-              <span className="text-xl text-primary">{confidenceScore}%</span>
-
-              {/* Progress Bar */}
-              <Progress
-                className="h-2 flex-1 bg-muted dark:bg-[#374151] [&_[data-slot=progress-indicator]]:bg-primary [&_[data-slot=progress-indicator]]:bg-linear-0"
-                value={confidenceScore}
-              />
+        {/* Main Content Area */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Chart Section */}
+          <div className="lg:col-span-8 space-y-6">
+            <div className="bg-background backdrop-blur-lg rounded-xl p-4">
+              <TradingViewChart />
+            </div>
+            <div className="bg-background backdrop-blur-lg rounded-xl p-6">
+              <Tabs className="w-full" defaultValue="trading">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl text-white">Trading Activity</h2>
+                  <TabsList className="bg-gray-800/50">
+                    <TabsTrigger className="text-white cursor-pointer" value="trading">
+                      Trading
+                    </TabsTrigger>
+                    <TabsTrigger className="text-white cursor-pointer" value="yieldFarming">
+                      Yield Farming
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
+                <TabsContent value="trading">
+                  <TradingDecisionsTable
+                    data={tradingDecisions}
+                    loading={tableLoading}
+                    pagination={{
+                      page: currentPage,
+                      pageSize: pageSize,
+                      totalPages: totalPages,
+                      totalRecords: totalCount,
+                      onPageChange: handlePageChange,
+                      onPageSizeChange: handlePageSizeChange,
+                    }}
+                  />
+                </TabsContent>
+                <TabsContent value="yieldFarming">
+                  <CurvanceDecisionsTable
+                    data={curvanceDecisions}
+                    loading={tableLoading}
+                    pagination={{
+                      page: currentPage,
+                      pageSize: pageSize,
+                      totalPages: totalPages,
+                      totalRecords: totalCount,
+                      onPageChange: handlePageChange,
+                      onPageSizeChange: handlePageSizeChange,
+                    }}
+                  />
+                </TabsContent>
+              </Tabs>
             </div>
           </div>
 
-          {/* Live Reasoning Feed */}
-          <LiveReasoningFeed feedData={liveReasoningFeed} />
+          {/* Sidebar */}
+          <div className="lg:col-span-4 space-y-6">
+            <div className="bg-background backdrop-blur-lg rounded-xl p-6">
+              <h2 className="text-xl text-white mb-4">Protocol Allocation</h2>
+              <ProtocolAllocationChart />
+            </div>
+
+            <AIAnalysisSection
+              confidenceLevel={confidenceLevel}
+              ConfidenceScore={ConfidenceScore}
+              liveReasoningFeed={liveReasoningFeed}
+              tradingDecisions={tradingDecisions}
+            />
+          </div>
         </div>
-      </main>
+      </div>
     </div>
-  );
+  )
 }

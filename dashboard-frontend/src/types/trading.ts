@@ -1,29 +1,30 @@
 // Trading history
 export interface ITradingHistoryData {
-  id: string;
+  _id: string;
+  timestamp: string;
   pair: string;
   action: string;
-  amountIn: string;
-  expectedAmountOut: string;
-  createdAt: string;
-  status: string;
-  price: string;
-  txHash: string;
   tokenIn: string;
   tokenOut: string;
-  decisionId: string;
-  decision: IDecision;
-  error: string | null;
+  amountIn: string;
+  expectedAmountOut: string;
+  txHash: string;
+  status: string;
   message: string;
-  timestamp: string;
+  id: string;
+  createdAt: string;
   updatedAt: string;
 }
 
 export interface ITradingHistoryTable {
   id: string;
-  txHash: string;
   txDate: string;
+  action: string;
   txDescription: string;
+  amount: string;
+  token: string;
+  txStatus: string;
+  txHash: string;
 }
 
 // Decision
@@ -69,4 +70,33 @@ export interface OHLCVPairItem {
   type: string; // OHLCV time frame.
   unixTime: number; // Timestamps (Unix seconds)
   v: number; // Volume
+}
+
+// Lending history
+export interface ILendingHistoryData {
+  _id: string;
+  timestamp: string;
+  token: string;
+  action: string;
+  amount: string;
+  apy?: number;
+  platform: string;
+  status: string;
+  error?: string;
+  message: string;
+  decisionId?: string;
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ILendingHistoryTable {
+  id: string;
+  txDate: string;
+  action: string;
+  txDescription: string;
+  amount: string;
+  pair: string;
+  apy: number;
+  status: string;
 }
